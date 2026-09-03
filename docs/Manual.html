@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SailplaneCalc &mdash; Developer Manual</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #f4f6f8;
+    --fg: #1c2228;
+    --fg-muted: #55606b;
+    --border: #dde3e8;
+    --accent: #1f6fb2;
+    --accent-bg: #eaf3fb;
+    --code-bg: #f0f2f5;
+    --warn-bg: #fff4e5;
+    --warn-border: #e0a95a;
+    --nav-width: 280px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14181c;
+      --bg-alt: #1b2126;
+      --fg: #dce3e8;
+      --fg-muted: #94a2ac;
+      --border: #2b333a;
+      --accent: #6cb2e8;
+      --accent-bg: #1c2c38;
+      --code-bg: #1f262c;
+      --warn-bg: #2c2416;
+      --warn-border: #8a6a2e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.55;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+  }
+  code {
+    background: var(--code-bg);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+  }
+  pre code { background: none; padding: 0; }
+  .layout {
+    display: flex;
+    align-items: flex-start;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  nav.toc {
+    position: sticky;
+    top: 0;
+    width: var(--nav-width);
+    flex: 0 0 var(--nav-width);
+    height: 100vh;
+    overflow-y: auto;
+    padding: 24px 18px;
+    border-right: 1px solid var(--border);
+    background: var(--bg-alt);
+  }
+  nav.toc h2 {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin: 18px 0 6px;
+  }
+  nav.toc h2:first-child { margin-top: 0; }
+  nav.toc ul { list-style: none; margin: 0 0 4px; padding: 0; }
+  nav.toc li { margin: 2px 0; }
+  nav.toc a {
+    display: block;
+    padding: 3px 8px;
+    border-radius: 5px;
+    color: var(--fg);
+    font-size: 0.92rem;
+  }
+  nav.toc a:hover { background: var(--accent-bg); text-decoration: none; }
+  main {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 32px 48px 120px;
+    max-width: 900px;
+  }
+  main h1 { font-size: 1.9rem; margin-top: 0; }
+  main h2 {
+    font-size: 1.4rem;
+    margin-top: 3em;
+    padding-top: 0.6em;
+    border-top: 1px solid var(--border);
+  }
+  main h3 { font-size: 1.12rem; margin-top: 2.2em; color: var(--accent); }
+  main h4 { font-size: 1rem; margin-top: 1.6em; }
+  .lede {
+    font-size: 1.08rem;
+    color: var(--fg-muted);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { color: var(--fg-muted); font-weight: 600; }
+  .file-badge {
+    display: inline-block;
+    font-family: Consolas, monospace;
+    font-size: 0.82rem;
+    background: var(--accent-bg);
+    color: var(--accent);
+    padding: 1px 8px;
+    border-radius: 999px;
+    margin-left: 6px;
+  }
+  .note {
+    background: var(--accent-bg);
+    border-left: 3px solid var(--accent);
+    padding: 10px 16px;
+    border-radius: 4px;
+    margin: 1em 0;
+  }
+  .quirk {
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn-border);
+    padding: 10px 16px;
+    border-radius: 4px;
+    margin: 1em 0;
+  }
+  .formula {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin: 0.8em 0;
+    font-family: Consolas, monospace;
+    font-size: 0.95rem;
+    overflow-x: auto;
+  }
+  hr.section-end { border: none; }
+  footer {
+    max-width: 900px;
+    padding: 24px 48px 60px;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+  }
+  .toc-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0 4px;
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <h2>SailplaneCalc</h2>
+  <ul><li><a href="#overview">Overview &amp; Architecture</a></li>
+      <li><a href="#layout">Project Layout</a></li></ul>
+
+  <h2>Engine Layer</h2>
+  <ul>
+    <li><a href="#models">models.py</a></li>
+    <li><a href="#geometry">geometry.py</a></li>
+    <li><a href="#wing">wing.py</a></li>
+    <li><a href="#flight-performance">flight_performance.py</a></li>
+    <li><a href="#tail-cruciform">tail_cruciform.py</a></li>
+    <li><a href="#tail-vtail">tail_vtail.py</a></li>
+    <li><a href="#neutral-point">neutral_point.py</a></li>
+    <li><a href="#tail-checks">tail_checks.py</a></li>
+    <li><a href="#vtail-convert">vtail_convert.py</a></li>
+    <li><a href="#planform">planform.py</a></li>
+    <li><a href="#cl-distribution">cl_distribution.py</a></li>
+    <li><a href="#linalg">linalg.py</a></li>
+  </ul>
+
+  <h2>UI Layer</h2>
+  <ul>
+    <li><a href="#app-state">app_state.py</a></li>
+    <li><a href="#units">units.py</a></li>
+    <li><a href="#config-io">config_io.py</a></li>
+    <li><a href="#widgets">widgets.py</a></li>
+    <li><a href="#tabs">Tabs</a></li>
+    <li><a href="#painted-widgets">Custom-Painted Widgets</a></li>
+    <li><a href="#main-window">main_window.py</a></li>
+  </ul>
+
+  <h2>Reference</h2>
+  <ul>
+    <li><a href="#testing">Testing</a></li>
+    <li><a href="#credits">Credits &amp; Sources</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<h1>SailplaneCalc &mdash; Developer Manual</h1>
+<p class="lede">A from-scratch reference for anyone extending or debugging this codebase. It
+documents every major module, the formulas each one implements, and <em>why</em> those
+formulas are correct &mdash; not just what the code does, but the aerodynamics/geometry theory
+behind it.</p>
+
+<div class="note">
+This app is a Python/PySide6 desktop port of two Excel workbooks &mdash;
+<code>SailplaneCalc.xls</code> and <code>SailplaneCalcMetric.xlsx</code> &mdash; that RC glider
+builders have used for years to size wings, tails, and CG. The Cl Calcs tab additionally ports
+<code>LIFTROLL.xlsx</code>, a horseshoe-vortex lift-distribution calculator. See
+<a href="#credits">Credits &amp; Sources</a> for full attribution.
+</div>
+
+<h2 id="overview">Overview &amp; Architecture</h2>
+<p>The codebase is a strict two-layer split:</p>
+<ul>
+  <li><code>sailplane_calc/engine/</code> &mdash; pure computation. Every function takes a
+  small <code>@dataclass</code> input and returns a <code>@dataclass</code> result. Nothing in
+  this package imports Qt, touches global state, or does I/O. Every formula here can be called
+  and tested in isolation (see <a href="#testing">Testing</a>).</li>
+  <li><code>sailplane_calc/ui/</code> &mdash; PySide6 widgets. One file per tab, plus a handful
+  of shared helpers. UI code never computes anything aerodynamic itself &mdash; it only reads
+  input widgets, builds an engine input dataclass, calls an engine function, and writes the
+  result dataclass's fields back into result labels or a hand-painted chart.</li>
+</ul>
+
+<h3>The single source of truth: <code>AppState</code></h3>
+<p><code>ui/app_state.py</code> holds <em>every</em> raw input value in the app as plain
+attributes (floats, strings, small dataclasses) on one <code>AppState</code> object, shared by
+reference across every tab. There is no per-tab local state and no Redux-style action
+dispatch &mdash; a tab widget just does <code>setattr(self.state, "span1", value)</code> then
+calls <code>self.state.notify()</code>, which emits a Qt <code>changed</code> signal. Every tab
+connects <code>state.changed</code> to its own <code>refresh()</code> method in its
+constructor, so <strong>every</strong> tab recomputes and repaints on <strong>every</strong>
+change anywhere in the app &mdash; simple, always-consistent, and fast enough at this problem
+size that no dependency tracking is needed.</p>
+<p><code>AppState</code> also exposes <code>*_result()</code>/<code>*_input()</code> methods
+(e.g. <code>wing_result()</code>, <code>cl_distribution_result()</code>) that build the
+relevant engine input dataclass from its raw attributes and call the matching engine function.
+These are the seam between the two layers &mdash; a tab never calls an <code>engine.*</code>
+function directly with hand-built inputs; it goes through <code>AppState</code>.</p>
+
+<h3>The unit-conversion boundary</h3>
+<p>Every engine formula works <em>exclusively</em> in fixed canonical units: inches, ounces,
+mph, degrees. Metric is purely a display-layer concern, handled entirely in
+<a href="#units"><code>ui/units.py</code></a>: a value is converted to the display system only
+at the moment it's shown in a widget or read back out of one
+(<a href="#widgets"><code>UnitSpinBox</code></a> does this automatically). This means no engine
+formula ever needs to know or care which unit system the user has selected.</p>
+
+<h2 id="layout">Project Layout</h2>
+<pre><code>sailplane_calc/
+  app.py                  entry point (python -m sailplane_calc.app)
+  engine/                 pure computation, no Qt, no I/O
+    models.py                all @dataclass input/result types
+    geometry.py               shared trapezoidal-panel surface math
+    wing.py                    wing geometry, dihedral, Reynolds estimate
+    flight_performance.py      stall speed / Cl / G-load
+    tail_cruciform.py           horizontal stab + vertical fin geometry
+    tail_vtail.py                V-tail geometry
+    neutral_point.py             neutral point & balance point
+    tail_checks.py                 Mark Drela's tail-sizing checks
+    vtail_convert.py                conventional <-> V-tail area conversion
+    planform.py                       2D outline geometry, for drawing only
+    cl_distribution.py                horseshoe-vortex lift-distribution VLM
+    linalg.py                          generic dense linear-system solver
+  ui/                     PySide6 widgets
+    app_state.py             central shared state + engine call-through
+    units.py                  imperial/metric conversion
+    config_io.py                save/load AppState to/from JSON
+    widgets.py                   shared input/result widget helpers
+    main_window.py                 tab registration &amp; visibility
+    *_tab.py                        one file per tab (see Tabs)
+    planform_widget.py               hand-painted planform outline
+    balance_diagram_widget.py         hand-painted CG/NP bar diagram
+    xy_chart_widget.py                 hand-painted XY line chart
+tests/                    pytest, mirrors engine/ 1:1 (test_&lt;module&gt;.py)
+docs/Manual.html         this file
+</code></pre>
+
+<h2 id="models">models.py <span class="file-badge">engine/models.py</span></h2>
+<p>Every input and result type in the engine is a plain <code>@dataclass</code> defined here,
+grouped roughly by tab. There's no inheritance-heavy modeling &mdash; the one exception is
+<code>WingPanelInput(PanelInput)</code>, which adds <code>dihedral_rise</code> and
+<code>twist_tip_deg</code> to the generic trapezoidal <code>PanelInput</code>
+(<code>span</code>, <code>chord_root</code>, <code>chord_tip</code>, <code>sweep_offset</code>)
+used by every surface (wing, stab, fin, V-tail). Field names and units intentionally mirror the
+original workbook's cell names so a result can be checked cell-for-cell against
+<code>SailplaneCalc.xls</code>.</p>
+
+<h2 id="geometry">geometry.py <span class="file-badge">engine/geometry.py</span></h2>
+<p>The shared trapezoidal-panel math every lifting surface (wing, horizontal stab, vertical
+fin, V-tail) ultimately reduces to. A "surface" here is a chain of one or more trapezoidal
+panels; <code>compute_surface(panels, mirrored)</code> walks them root-to-tip, accumulating
+span and sweep, and produces one aggregate <code>SurfaceResult</code>.</p>
+
+<h3>Per-panel trapezoid formulas</h3>
+<p>For a single panel with root chord <code>c<sub>r</sub></code>, tip chord
+<code>c<sub>t</sub></code>, span <code>b</code>, and LE sweep offset <code>&Delta;x</code>
+(the horizontal distance the tip's leading edge sits aft of the root's):</p>
+<div class="formula">area = b &middot; (c<sub>r</sub> + c<sub>t</sub>) / 2</div>
+<p><strong>Mean Aerodynamic Chord (MAC)</strong> &mdash; the standard trapezoidal-wing formula
+(e.g. Raymer, <em>Aircraft Design: A Conceptual Approach</em>), rearranged into a form that
+avoids a division by zero when <code>c<sub>r</sub>=c<sub>t</sub>=0</code>:</p>
+<div class="formula">MAC = (2/3) &middot; (c<sub>r</sub> + c<sub>t</sub> &minus; c<sub>r</sub>c<sub>t</sub>/(c<sub>r</sub>+c<sub>t</sub>))</div>
+<p>which is algebraically identical to the more familiar
+<code>MAC = (2/3)&middot;c<sub>r</sub>&middot;(1+&lambda;+&lambda;&sup2;)/(1+&lambda;)</code>
+with taper ratio <code>&lambda; = c<sub>t</sub>/c<sub>r</sub></code>. This is always
+&ge; the simple area/span "mean chord", since MAC weights the wider (root-ward) part of a
+tapered panel more heavily &mdash; it's the chord of an imaginary untapered wing with the same
+area, span, and pitching-moment behavior as the real tapered one.</p>
+<p><strong>25%-MAC point</strong> (<code>panel_25pct_from_own_root</code>), i.e. the panel's own
+aerodynamic center, measured aft from its own root leading edge:</p>
+<div class="formula">x<sub>25</sub> = &Delta;x &middot; (c<sub>r</sub>+2c<sub>t</sub>) / (3&middot;(c<sub>r</sub>+c<sub>t</sub>)) &nbsp;+&nbsp; MAC / 4</div>
+<p>The first term is the LE-sweep offset evaluated at the spanwise station where the local
+chord equals the MAC (the classic <code>y&#772; = (b/6)&middot;(c<sub>r</sub>+2c<sub>t</sub>)/(c<sub>r</sub>+c<sub>t</sub>)</code>
+formula, with <code>&Delta;x</code> substituted for <code>b</code> since we only need the
+<em>chordwise</em>, not spanwise, position here); the second term is simply 25% of the MAC
+length itself. Adding them gives the standard aircraft-design recipe for where a trapezoidal
+panel's own aerodynamic center sits.</p>
+<p><strong>MAC's own spanwise station</strong> (<code>panel_mac_span_location</code>) &mdash;
+where along the span the local chord equals the MAC length:</p>
+<div class="formula">y<sub>MAC</sub> = b &middot; (c<sub>r</sub> &minus; MAC) / (c<sub>r</sub> &minus; c<sub>t</sub>) &nbsp;&nbsp;(= b/2 if c<sub>r</sub>=c<sub>t</sub>, i.e. untapered)</div>
+<p><strong>LE sweep angle</strong> is simply <code>atan(&Delta;x / b)</code>, purely
+informational (not used in any downstream aerodynamic formula).</p>
+
+<h3>Aggregating panels into a surface</h3>
+<p><code>compute_surface</code> area-weights each active panel's own 25%-point, MAC length, and
+MAC span-location across the whole chain (root to tip), giving the surface as a whole a single
+effective aerodynamic-center location, MAC, and MAC span station &mdash; the same technique
+used for any multi-panel/cranked wing. <code>mirrored=True</code> (used for every span-defined-
+as-half-span surface: wing, stab, V-tail) doubles the raw half-surface's span and area to get
+the full aircraft-wide totals.</p>
+<div class="formula">mean_chord = total_area / total_span
+aspect_ratio = total_span / mean_chord &nbsp;&nbsp;(equivalent to the more familiar b&sup2;/S, since S = b&middot;mean_chord)
+point_0 = (area-weighted x<sub>25</sub>) &minus; MAC&middot;0.25   &nbsp;(the LE of the surface's own MAC)
+point_25 = point_0 + MAC&middot;0.25                          &nbsp;(the surface's aerodynamic center)</div>
+<p><code>taper_ratio</code> for a multi-panel surface is <em>not</em> simply tip/root &mdash;
+there's no single well-defined value for a cranked planform &mdash; so it's backed out from the
+already-computed <code>mean_chord</code> as an equivalent single-taper value:
+<code>2&middot;mean_chord/root_chord &minus; 1</code> (the inverse of
+<code>mean_chord = c<sub>r</sub>&middot;(1+&lambda;)/2</code> for an untapered-panel
+equivalent).</p>
+<p><code>safe_div(a, b)</code> is used everywhere a formula divides by a geometry-derived
+quantity that can legitimately be zero mid-edit (e.g. every panel span cleared) &mdash; it
+returns <code>0.0</code> instead of raising, so a transient invalid geometry degrades every
+tab's display gracefully rather than crashing the whole app on every keystroke.</p>
+
+<h2 id="wing">wing.py <span class="file-badge">engine/wing.py</span></h2>
+<h3>Dihedral chain</h3>
+<p>Each <code>WingPanelInput.dihedral_rise</code> is a <em>cumulative</em> measurement &mdash;
+the vertical rise at that panel's tip, measured from the wing-root plane (what you'd read off a
+ruler held flat against the root). <code>incremental_rise()</code> differences consecutive
+panels' cumulative rise to get each panel's own rise, then
+<code>compute_panel_dihedral_deg</code> treats each panel as a rigid rod of length = its span
+(the slant length) with vertical rise = its own incremental rise, so:</p>
+<div class="formula">dihedral<sub>i</sub> = asin(rise_diff<sub>i</sub> / span<sub>i</sub>)</div>
+<p>(the asin argument is clamped to <code>[&minus;1, 1]</code> before the call &mdash; a rise
+larger in magnitude than its own panel's span is physically extreme but reachable mid-edit,
+e.g. shrinking a span below an already-entered rise; clamping saturates the angle at
+&plusmn;90&deg; instead of raising a domain error.)</p>
+
+<h3>Effective (dihedral-projected) wing</h3>
+<p>A panel with dihedral is a slant length in 3-D; its aerodynamically-relevant span (what
+actually contributes to induced drag / lift-curve slope via aspect ratio) is its horizontal
+projection. Since <code>span</code> is the hypotenuse and <code>rise_diff</code> the vertical
+leg of a right triangle:</p>
+<div class="formula">effective_span<sub>i</sub> = &radic;(span<sub>i</sub>&sup2; &minus; rise_diff<sub>i</sub>&sup2;)</div>
+<p><code>compute_effective_wing</code> rebuilds a whole second <code>EffectiveWingResult</code>
+(span, area, mean chord, aspect ratio) from these projected per-panel spans &mdash; always
+&le; the raw "Total Wing Results" for any wing with dihedral. This same projection is reused by
+<a href="#cl-distribution"><code>cl_distribution.py</code></a> to build its flat-plane vortex
+geometry.</p>
+
+<h3>Wing loading &amp; Reynolds number estimate</h3>
+<div class="formula">wing_loading [oz/ft&sup2;] = weight[oz] / total_area[in&sup2;] &middot; 144</div>
+<div class="formula">Re &asymp; 9360 &middot; V[mph] &middot; mean_chord[ft]</div>
+<p>The Reynolds number estimate is the standard <code>Re = V&middot;c/&nu;</code> (velocity
+times characteristic length over kinematic viscosity), pre-multiplied out for convenient
+mph/inch inputs. Converting <code>V[mph]</code> to ft/s (&times;5280/3600 &asymp; 1.467) and
+dividing by air's kinematic viscosity at sea level (<code>&nu; &asymp; 1.57&times;10&#8315;&#8308;
+ft&sup2;/s</code>) gives a combined constant of <code>1.467/1.57&times;10&#8315;&#8308; &asymp;
+9340</code> &mdash; matching the <code>9360</code> constant in the code to within the usual
+spread of published air-property tables. <code>mean_chord</code> is converted from inches to
+feet (&times;1/12 &asymp; 0.0833) before multiplying.</p>
+
+<h2 id="flight-performance">flight_performance.py <span class="file-badge">engine/flight_performance.py</span></h2>
+<p>A from-scratch re-derivation of the workbook's stall-speed/Cl/G-load calculator, deliberately
+<em>not</em> transliterating its original tangled unit-conversion chain &mdash; independently
+cross-checked in SI units against the reference workbook's own worked example before being
+adopted (see the module's own docstring). Everything follows directly from the standard
+level-flight lift equation:</p>
+<div class="formula">L = C<sub>L</sub> &middot; &frac12;&rho;V&sup2;S &nbsp;&nbsp;&nbsp; (level flight: L = W)</div>
+<p>using sea-level standard air density <code>&rho; = 0.002378 slug/ft&sup3;</code>. The three
+functions are this equation solved for three different unknowns:</p>
+<table>
+<tr><th>Function</th><th>Solves for</th><th>Formula</th></tr>
+<tr><td><code>cl_from_stall_speed</code></td><td>C<sub>L</sub>, given V</td>
+    <td><code>C<sub>L</sub> = W / (&frac12;&rho;V&sup2;S)</code></td></tr>
+<tr><td><code>stall_speed_from_cl</code></td><td>V, given C<sub>L</sub></td>
+    <td><code>V = &radic;(W / (&frac12;&rho;C<sub>L</sub>S))</code></td></tr>
+<tr><td><code>g_load_at_speed</code></td><td>G, given C<sub>L</sub> and V</td>
+    <td><code>G = (C<sub>L</sub>&middot;&frac12;&rho;V&sup2;S) / W</code></td></tr>
+</table>
+<p><code>g_load_at_speed</code> answers "if the wing is held at this same lift coefficient
+(angle of attack) but flown at a higher speed, how many G's of lift does it generate relative
+to level-flight weight?" &mdash; used with <code>MAX_SPEED_MULTIPLIER = 4.0</code> (an assumed
+dive-speed-to-stall-speed ratio, a common RC sizing rule of thumb) to estimate the structural
+G-load at that dive speed.</p>
+
+<h2 id="tail-cruciform">tail_cruciform.py <span class="file-badge">engine/tail_cruciform.py</span></h2>
+<p><code>compute_horizontal_stab</code> is a thin wrapper &mdash; the stabilizer is just a
+single mirrored panel through <a href="#geometry"><code>compute_surface</code></a>.</p>
+<p>The vertical fin is more subtle: its lower and upper panels both root at the <em>same</em>
+shared center chord but extend in <em>opposite</em> directions from it (down / up), unlike the
+wing's chained root&rarr;tip1&rarr;tip2&rarr;&hellip; panels. <code>compute_vertical_fin</code>
+re-derives the area-weighted aggregation from <a href="#geometry">geometry.py</a>'s
+per-panel building blocks directly (rather than calling <code>compute_surface</code>, which
+assumes a chain), assigning the lower panel's MAC-span contribution a <em>negative</em> sign
+and the upper panel's a positive one &mdash; a coherent "below/above the fuselage centerline"
+sign convention rather than a placeholder.</p>
+
+<h2 id="tail-vtail">tail_vtail.py <span class="file-badge">engine/tail_vtail.py</span></h2>
+<p>A V-tail panel's own dihedral (half-angle from horizontal) and the included angle between
+the two V panels:</p>
+<div class="formula">half_dihedral = atan(dihedral_rise / span)
+total_angle = 180&deg; &minus; 2 &middot; half_dihedral</div>
+<div class="quirk">
+<strong>Deliberately preserved workbook quirk:</strong> the original workbook's "25% point"
+formula for the V-tail panel (<code>V-Tail!D31</code>) divides by the panel's own area instead
+of the surface's total area &mdash; algebraically <code>=D29*D30/D29*2-D25*0.25</code>
+self-cancels to <code>2&middot;x<sub>25,own-root</sub> &minus; 0.25&middot;mean_chord</code>,
+which is <em>not</em> the same value the general area-weighted aggregation formula (used by the
+Wing and horizontal stab) would produce. This is reproduced deliberately in
+<code>compute_vtail</code>, because it's what the original tool's downstream V-Tail
+neutral-point and tail-check calculations actually consumed &mdash; changing it would silently
+shift every V-tail CG/NP number away from the values V-tail builders following the original
+tool are used to. The one intentional refinement: the <code>mean_chord&middot;0.25</code> term
+uses the true MAC length instead, for consistency with the MAC upgrade applied everywhere else
+in this port (there's no V-Tail sheet in the newer metric reference workbook to check this
+specific formula against, but using the true MAC here is the same class of improvement applied
+uniformly elsewhere).
+</div>
+
+<h2 id="neutral-point">neutral_point.py <span class="file-badge">engine/neutral_point.py</span></h2>
+<p>Implements a tail-volume-coefficient neutral-point estimate (credited to Martin Simons,
+<em>Model Aircraft Aerodynamics</em>), with a Helmbold-style aspect-ratio correction to each
+surface's lift-curve slope and an empirical downwash factor.</p>
+
+<h3>Helmbold's equation</h3>
+<p>A 2-D airfoil's lift-curve slope (thin-airfoil theory: <code>2&pi;</code>/rad
+&asymp; 0.11/deg) overpredicts a real, finite-span surface's slope &mdash; induced downwash
+from the wingtip vortices reduces the effective angle of attack seen by each section.
+<strong>Helmbold's equation</strong> is a well-known empirical correction for this:</p>
+<div class="formula">a = (AR &middot; a<sub>0</sub>) / (AR + 18.25 &middot; a<sub>0</sub>)</div>
+<p>where <code>a<sub>0</sub></code> is the uncorrected (2-D, "infinite aspect ratio")
+per-degree lift-curve slope. The wing uses <code>a<sub>0</sub>=0.11</code>/deg (close to thin
+airfoil theory); the tail surfaces use a slightly lower <code>a<sub>0</sub>=0.095</code>/deg,
+reflecting a typically thinner/lower-camber tail section.</p>
+
+<h3>Tail volume coefficient</h3>
+<div class="formula">V<sub>H</sub> = (S<sub>tail</sub> &middot; l<sub>tail</sub>) / (S<sub>wing</sub> &middot; c&#772;<sub>wing</sub>)</div>
+<p>the classic non-dimensional "how big and how far away is the tail" number, where the tail
+arm <code>l<sub>tail</sub></code> is the distance from the wing's own aerodynamic center (its
+25%-MAC point) to the tail's aerodynamic center, threading through the wing root chord and the
+wing-trailing-edge-to-tail-leading-edge gap the user enters. For a V-tail, the vertical
+component of the tail arm is folded in via <code>cos(half_dihedral)</code>, since a V-panel's
+effective horizontal-tail contribution shrinks as it's rotated up toward vertical.</p>
+
+<h3>Neutral point &amp; static margin</h3>
+<div class="formula">downwash_factor (d&epsilon;/d&alpha;) &asymp; 35 &middot; a<sub>wing</sub> / AR<sub>wing</sub>
+
+NP [% MAC] = (0.25 + &eta; &middot; V<sub>H</sub> &middot; (a<sub>tail</sub>/a<sub>wing</sub>) &middot; (1 &minus; d&epsilon;/d&alpha;)) &middot; 100</div>
+<p>This is the standard stick-fixed static-longitudinal-stability neutral-point formula: the
+wing's own aerodynamic center (25% MAC) plus a stabilizing contribution from the tail,
+proportional to how big/far the tail is (<code>V<sub>H</sub></code>), how effective it is
+relative to the wing (<code>a<sub>tail</sub>/a<sub>wing</sub></code>), how much of the tail's
+own angle of attack survives the wing's downwash (<code>1&minus;d&epsilon;/d&alpha;</code>),
+and an overall efficiency factor <code>&eta;</code> (the user-entered Stabilizer Efficiency,
+~0.6 for a cruciform tail sitting in the wing's wake, ~0.9 for a T-tail clear of it).
+<code>static_margin = NP[%MAC] &minus; CG[%MAC]</code> follows directly, and
+<code>compute_balance_point</code> is pure algebra converting between the three equivalent ways
+of specifying a CG location (static margin %, %MAC, or an absolute distance from the root
+leading edge) so that switching which one you're typing into never silently reinterprets a
+stale number under a new meaning &mdash; a trap the original spreadsheet falls into whenever a
+formula cell gets overwritten with a plain number.</p>
+
+<h2 id="tail-checks">tail_checks.py <span class="file-badge">engine/tail_checks.py</span></h2>
+<p>Mark Drela's non-dimensional tail-sizing design-check parameters (Radio Controlled Soaring
+Digest, Aug&nbsp;2004) &mdash; a second, independent set of tail-sizing numbers alongside the
+neutral-point calculation, aimed specifically at RC sailplane handling qualities (spiral
+stability, thermalling behavior) rather than generic longitudinal stability.</p>
+
+<h3>Equivalent Dihedral Angle (EDA)</h3>
+<p>A single spanwise-weighted dihedral number standing in for a wing whose dihedral angle
+varies from panel to panel (polyhedral). Each panel is weighted by how much its outboard edge's
+position on an elliptical-lift-like falloff curve
+<code>f(&eta;) = (1&minus;&eta;&sup2;)<sup>1.5</sup></code> (where <code>&eta;</code> is
+spanwise fraction, 0 at root, 1 at tip) differs from its inboard edge's:</p>
+<div class="formula">EDA = &Sigma;<sub>i</sub> (f(&eta;<sub>i</sub>) &minus; f(&eta;<sub>i+1</sub>)) &middot; dihedral<sub>i</sub></div>
+<p>&mdash; effectively integrating dihedral against a weighting curve that concentrates more
+importance on inboard panels (where most of an elliptically-loaded wing's lift, and hence its
+contribution to roll/yaw coupling, is concentrated).</p>
+
+<h3>Tail volumes &amp; spiral stability</h3>
+<div class="formula">V<sub>H</sub> = (S<sub>h</sub>/S<sub>w</sub>) &middot; (gap + x<sub>25,h</sub> + 0.75&middot;(c&#772;<sub>w</sub>+x<sub>0,w</sub>)) / c&#772;<sub>w</sub>
+V<sub>v</sub> = (S<sub>v</sub>/S<sub>w</sub>) &middot; (gap + x<sub>25,v</sub> + 0.75&middot;(c&#772;<sub>w</sub>+x<sub>0,w</sub>)) / b<sub>w</sub>
+b (spiral stability) = EDA &middot; (vertical arm term) / C<sub>L,therm</sub></div>
+<p>This reproduces Drela's own published recipe exactly (the horizontal volume normalizes the
+tail-arm term by wing mean chord, the vertical volume by wing span &mdash; the standard
+convention for horizontal vs. vertical tail volume coefficients). <code>b</code> combines the
+equivalent dihedral with the vertical tail's effectiveness, divided by the assumed lift
+coefficient during slow thermalling flight (a user-entered setting on the Tail Sizing Checks
+tab) &mdash; Drela's suggested interpretation bands (b&gt;5 stable, b=5 neutral, b&lt;5
+unstable) are reproduced verbatim in that tab's on-screen help text.</p>
+
+<h2 id="vtail-convert">vtail_convert.py <span class="file-badge">engine/vtail_convert.py</span></h2>
+<p>Bidirectional conversion between a conventional (horizontal + vertical) tail and a V-tail of
+equivalent total area, for the Quick V-Tail Sizing tab. Treating the horizontal and vertical
+areas as the legs of a right triangle and the V-tail's half-area as the hypotenuse-equivalent:</p>
+<div class="formula">v_half_area = (horizontal_area + vertical_area) / 2
+half_dihedral = atan2(vertical_area, horizontal_area)</div>
+<p><code>atan2</code> (rather than <code>atan(vertical/horizontal)</code>) is used specifically
+so a zero horizontal area &mdash; reachable just by clearing that input field &mdash; gives a
+well-defined 90&deg; instead of a division-by-zero crash. The inverse direction solves the same
+relationship for the two areas given a V-half-area and a dihedral angle:</p>
+<div class="formula">horizontal_area = 2&middot;v_half_area / (1 + tan(&theta;))
+vertical_area = horizontal_area &middot; tan(&theta;)</div>
+<p>guarded against the denominator approaching zero near &minus;45&deg; dihedral (reachable
+from an extreme negative dihedral rise), which would otherwise blow up to an astronomical,
+meaningless area instead of cleanly returning zero.</p>
+
+<h2 id="planform">planform.py <span class="file-badge">engine/planform.py</span></h2>
+<p>Pure 2-D outline geometry for <em>drawing</em>, not analysis &mdash; walks panels the same
+way <code>geometry.compute_surface</code> does (cumulative span/sweep) but keeps every
+breakpoint as a polygon vertex instead of reducing to aggregate scalars.
+<code>compute_planform_outline</code> traces one closed root-to-tip-and-back polygon (used by
+the vertical-tail side view and single-surface previews); <code>compute_planform_panels</code>
+instead returns one quad per panel, each tagged with its panel index so the widget can color
+panels distinctly, mirrored to both sides for a symmetric surface. Mirroring negates the span
+coordinate and reverses point order so a full-span point list still reads root&rarr;tip
+consistently across the whole wing &mdash; the same left/right convention
+<a href="#cl-distribution"><code>cl_distribution.py</code></a> reuses for its own vortex
+geometry.</p>
+
+<h2 id="cl-distribution">cl_distribution.py <span class="file-badge">engine/cl_distribution.py</span></h2>
+<p>The most numerically involved module in the engine: a horseshoe-vortex
+<strong>Vortex Lattice Method (VLM)</strong> &mdash; the same family of method as
+<code>LIFTROLL.xlsx</code> (John Hazel's Lift and Cl calculator), reimplemented from the
+standard aerodynamic theory rather than transcribed cell-by-cell, and wired directly into the
+app's existing 4-panel wing geometry (no new inputs beyond twist). It answers a question none
+of the other engine modules do: <em>how is lift distributed along the span</em>, not just how
+much lift the wing makes in total.</p>
+
+<h3>Why a lattice of horseshoe vortices?</h3>
+<p>Classical thin-airfoil theory gives a 2-D section's lift, but a real finite wing's local
+lift coefficient at any span station depends on the whole wing's planform &mdash; its taper,
+sweep, and twist all redistribute lift along the span, and induced downwash from the trailing
+vortex sheet reduces the effective angle of attack seen at each station. The Vortex Lattice
+Method (see e.g. Katz &amp; Plotkin, <em>Low-Speed Aerodynamics</em>, or Bertin &amp; Cummings,
+<em>Aerodynamics for Engineers</em>) models this by replacing the wing's bound circulation with
+a row of horseshoe vortices &mdash; one per spanwise strip &mdash; each a closed loop of a
+finite bound segment (at the strip's quarter-chord) plus two trailing legs running downstream
+to (effectively) infinity, and solves for every vortex's circulation strength simultaneously
+so that the flow is tangent to the wing surface at every strip's control point (its
+three-quarter-chord point). This app uses one lifting line per panel-strip in a single flat
+(chordwise, spanwise) plane &mdash; the same simplification <code>LIFTROLL.xlsx</code>'s own
+2-D vortex-corner storage makes &mdash; using each panel's dihedral-projected span (see
+<a href="#wing">wing.py</a>'s <code>incremental_rise</code>) rather than modeling dihedral's
+out-of-plane geometry directly.</p>
+
+<h3>1. Geometry: from 4 panels to up to 40 vortices</h3>
+<p><code>_build_span_stations</code> walks the wing's (up to) 4 active panels &mdash; the same
+root/sweep/twist chaining <a href="#geometry">geometry.py</a> and
+<a href="#planform">planform.py</a> use &mdash; and subdivides each into
+<code>N_STATIONS_PER_PANEL = 5</code> equal-width spanwise strips, linearly interpolating
+chord, LE offset, and twist at each strip's edges and midpoint. 4 panels &times; 5 strips
+&times; 2 (mirrored) sides = up to 40 vortices, matching <code>LIFTROLL.xlsx</code>'s own fixed
+40-vortex grid. Each strip becomes one horseshoe vortex:</p>
+<ul>
+  <li>a <strong>bound segment</strong> at 25% of the local chord, spanning the strip's left and
+  right edges;</li>
+  <li>a <strong>control point</strong> at 75% of the local chord, at the strip's spanwise
+  midpoint &mdash; where the flow-tangency boundary condition is enforced;</li>
+  <li>two <strong>trailing legs</strong>, extending downstream from the bound segment's
+  endpoints to <code>TRAILING_LEG_LENGTH_FACTOR = 100</code> span-lengths away &mdash; a
+  standard, well-known long-but-finite stand-in for a true semi-infinite vortex filament (the
+  residual induced velocity beyond that distance is negligible), which lets one finite-segment
+  formula serve both the bound and trailing legs.</li>
+</ul>
+<p>The classic quarter-chord/three-quarter-chord placement (rather than, say, both at the same
+chordwise station) is what makes a single chordwise lifting line correctly reproduce a thin
+airfoil's 2-D lift-curve slope in the limit of an isolated, high-aspect-ratio strip &mdash; a
+well-established result from thin-airfoil/lifting-line theory.</p>
+
+<h3>2. Biot-Savart induced velocity</h3>
+<p>Every vortex point and every control point lies in the same flat plane (dihedral is
+projected away, see above), which has a useful consequence: for a filament and field point both
+confined to a plane, the 3-D Biot-Savart cross product
+<code>d&#8467; &times; r</code> always points purely <em>normal</em> to that plane. So the only
+induced-velocity component that ever matters here is the scalar downwash <code>w</code>,
+computed by the standard closed-form finite-vortex-segment Biot-Savart formula for a
+unit-circulation filament from point A to point B, evaluated at point P:</p>
+<div class="formula">r<sub>1</sub> = P&minus;A,  r<sub>2</sub> = P&minus;B,  r<sub>0</sub> = B&minus;A
+w = (1/4&pi;) &middot; [(r<sub>0</sub>&middot;r<sub>1</sub>)/|r<sub>1</sub>| &minus; (r<sub>0</sub>&middot;r<sub>2</sub>)/|r<sub>2</sub>|] / (r<sub>1</sub>&times;r<sub>2</sub>)<sub>z</sub></div>
+<p>(<code>_segment_induced_w</code> in the code, guarded against the near-singular case where
+the field point sits essentially on the filament itself). A full horseshoe's induced velocity
+at any point is the sum of this formula applied to its three segments &mdash; far-left-to-left
+trailing leg, left-to-right bound segment, right-to-far-right trailing leg &mdash; traversed as
+one continuous circulation loop (<code>_horseshoe_induced_w</code>). Stacking every vortex's
+induced velocity at every control point builds the <strong>Aerodynamic Influence Coefficient
+(AIC) matrix</strong>: a square matrix where <code>AIC[i][k]</code> is the downwash induced at
+control point <em>i</em> by a unit circulation on horseshoe <em>k</em>.</p>
+
+<h3>3. Boundary condition &amp; the linear solve</h3>
+<p>Flow tangency (no flow through the lifting surface) requires the total induced downwash at
+each control point to exactly cancel the local geometric angle of attack (freestream normalized
+to unit magnitude, so the solved circulation is really <code>&Gamma;/V<sub>&infin;</sub></code>
+throughout &mdash; the freestream speed cancels out of every quantity this module needs):</p>
+<div class="formula">&Sigma;<sub>k</sub> AIC[i][k] &middot; &gamma;<sub>k</sub> = &minus;&alpha;<sub>local</sub>(i)</div>
+<p>Rather than solving this once per flight condition, the module exploits that this system is
+<em>linear</em> in angle of attack: it's solved <strong>once</strong>, with two independent
+right-hand sides &mdash; one for the wing's own built-in twist alone
+(<code>RHS<sub>twist</sub>[i] = &minus;radians(twist<sub>i</sub>)</code>), and one for a uniform
+1-radian addition to every station's angle of attack
+(<code>RHS<sub>unit</sub>[i] = &minus;1</code>) &mdash; via
+<a href="#linalg"><code>linalg.solve_linear_system</code></a>'s multi-column solve (one matrix
+decomposition, two right-hand-side columns). The resulting two circulation solutions,
+<code>&gamma;<sub>twist</sub></code> and <code>&gamma;<sub>unit</sub></code>, are then combined
+by superposition for <em>any</em> root angle of attack <code>&alpha;<sub>root</sub></code>:</p>
+<div class="formula">&gamma; = &gamma;<sub>twist</sub> + &alpha;<sub>root</sub> &middot; &gamma;<sub>unit</sub></div>
+
+<h3>4. Matching a target lift coefficient &mdash; no goal-seek needed</h3>
+<p>The overall wing lift coefficient is itself a linear functional of <code>&gamma;</code> (a
+weighted sum, see below), so <code>&alpha;<sub>root</sub></code> that makes the wing's overall
+CL exactly equal a target value can be solved in one division rather than an iterative
+goal-seek (the way <code>LIFTROLL.xlsx</code>'s own Excel Solver finds its trim conditions):</p>
+<div class="formula">CL(&gamma;) = &Sigma;<sub>i</sub> (2&middot;&gamma;<sub>i</sub>&middot;width<sub>i</sub>) / S<sub>total</sub>
+&alpha;<sub>root</sub> = (target_CL &minus; CL(&gamma;<sub>twist</sub>)) / CL(&gamma;<sub>unit</sub>)</div>
+<p>The <code>target_CL</code> is the aircraft's overall CL <em>at stall speed</em>
+(<code>AppState.speed_performance()</code>'s <code>cl</code>, already computed on the Wing tab
+from weight/area/stall-speed &mdash; see <a href="#flight-performance">flight_performance.py</a>)
+&mdash; matching the module's purpose, per <code>LIFTROLL.xlsx</code>'s own description: "the
+Local Cl graph can help find where the wing will stall first." <code>S<sub>total</sub></code>
+is deliberately the same raw (non-dihedral-projected) <code>wing_result().surface.total_area</code>
+that <code>target_CL</code> was itself computed against, so the two stay on a consistent basis
+even though the vortex geometry itself uses the dihedral-projected span.</p>
+
+<h3>5. Local Cl, local lift, and the elliptical reference</h3>
+<p>From Kutta-Joukowski, local lift per unit span is <code>l' = &rho;V&Gamma;</code>; combined
+with the definition of a local lift coefficient <code>l' = C<sub>l</sub>&middot;q&middot;c</code>
+(with <code>q=&frac12;&rho;V&sup2;</code>), and using the same
+<code>V<sub>&infin;</sub>=1</code> normalization as above:</p>
+<div class="formula">local_lift<sub>i</sub> = C<sub>l,i</sub>&middot;c<sub>i</sub> = 2&middot;&gamma;<sub>i</sub>
+C<sub>l,i</sub> = local_lift<sub>i</sub> / c<sub>i</sub></div>
+<p>The ideal <strong>elliptical</strong> reference curve &mdash; Prandtl's classic result that
+an elliptical spanwise lift (not chord) distribution minimizes induced drag for a given span
+and total lift, the textbook benchmark every real planform is compared against &mdash; is
+built directly from the solved distribution's own total lift, not a second VLM solve. Since
+<code>&int;<sub>&minus;b/2</sub><sup>b/2</sup> &radic;(1&minus;(y/(b/2))&sup2;) dy = (b/2)&middot;&pi;/2</code>:</p>
+<div class="formula">L<sub>0</sub> = 2 &middot; total_lift / (&pi; &middot; half_span)
+ellipse_lift(y) = L<sub>0</sub> &middot; &radic;(max(0, 1 &minus; (y/half_span)&sup2;))</div>
+<p>guaranteeing the ellipse curve carries exactly the same total lift as the actual solved
+distribution, so the two curves are directly comparable by eye on the Cl Calcs tab's "Lift
+Distribution vs Ideal Ellipse" chart.</p>
+
+<div class="note">
+<strong>Deliberately out of scope:</strong> <code>LIFTROLL.xlsx</code> also models aileron
+deflection and roll rate, using Excel Solver to goal-seek a steady-rolling trim condition. This
+port omits that entirely &mdash; the app has no aileron/roll-rate inputs anywhere else, and the
+same closed-form superposition trick used above for angle of attack extends cleanly to a roll
+trim (two more RHS columns, then one more division instead of a goal-seek) if that's ever
+wanted; see the "Proposed future extension" section of the implementation plan this module was
+built from.
+</div>
+
+<h2 id="linalg">linalg.py <span class="file-badge">engine/linalg.py</span></h2>
+<p>A small, deliberately VLM-agnostic dense linear-system solver &mdash;
+<code>solve_linear_system(a, b)</code> solves <code>A&middot;x = B</code> for an
+<code>N&times;N</code> matrix <code>A</code> and an <code>N&times;M</code> right-hand side
+<code>B</code> (<code>M</code> independent right-hand-side columns solved together off one
+decomposition, which is exactly how <a href="#cl-distribution">cl_distribution.py</a> uses it).
+Implemented as textbook <strong>Gauss-Jordan elimination with partial pivoting</strong>: for
+each column, the row with the largest-magnitude entry in that column (among remaining rows) is
+swapped into the pivot position before eliminating, which avoids the numerical instability of
+dividing by a small or zero pivot that naive top-to-bottom elimination is prone to. A
+still-near-zero pivot after searching (a genuinely degenerate column, e.g. from a zero-span
+panel mid-edit) is left as a decoupled identity row rather than raising &mdash; the same
+crash-avoidance convention as <code>geometry.safe_div</code>, extended to linear algebra. No
+external numeric library (e.g. NumPy) is used anywhere in this app; for the matrix sizes
+involved here (&le;40&times;40), a hand-rolled solver is simple, dependency-free, and plenty
+fast for a live-refreshing UI.</p>
+
+<h2 id="app-state">app_state.py <span class="file-badge">ui/app_state.py</span></h2>
+<p>Already introduced in <a href="#overview">Overview &amp; Architecture</a>. Concretely: every
+raw input is a plain attribute (e.g. <code>self.span1</code>, <code>self.chord_root</code>,
+<code>self.twist1_deg</code>), and each tab's data need is exposed as a small accessor method,
+for example:</p>
+<pre><code>def wing_panels(self) -> list[WingPanelInput]:
+    return [
+        WingPanelInput(span=self.span1, chord_root=self.chord_root, chord_tip=self.chord1_tip,
+                       sweep_offset=self.sweep1, dihedral_rise=self.rise1, twist_tip_deg=self.twist1_deg),
+        ...
+    ]
+
+def cl_distribution_result(self):
+    cl, *_ = self.speed_performance()
+    return compute_cl_distribution(ClDistributionInput(panels=self.wing_panels(), target_cl=cl))</code></pre>
+<p>Notice how <code>cl_distribution_result()</code> calls <code>speed_performance()</code>
+(the Wing tab's stall-speed/Cl calculator) to get its target CL &mdash; this is the concrete
+mechanism behind the cross-tab wiring described in
+<a href="#cl-distribution">cl_distribution.py</a> above; nothing about it is special-cased,
+it's the same "build an input dataclass from current state, call the engine, return the
+result" pattern every other <code>*_result()</code> method follows.</p>
+<p>One piece of actual (non-pass-through) logic lives here: <code>switch_balance_mode</code>
+recomputes the stored balance-point value when the user switches which of static
+margin/%MAC/distance they're specifying, so the physical CG location is preserved across the
+switch rather than reinterpreting a stale number under the new mode's units (see
+<a href="#neutral-point">neutral_point.py</a>).</p>
+
+<h2 id="units">units.py <span class="file-badge">ui/units.py</span></h2>
+<p>The entire imperial/metric conversion layer, in one place. Two pure functions,
+<code>to_display</code>/<code>from_display</code>, each taking a canonical-unit value plus a
+<code>kind</code> string (<code>"length"</code>, <code>"weight"</code>, <code>"speed"</code>,
+<code>"area"</code>) and the current <code>Units</code> enum, and applying (or inverting) the
+matching fixed conversion factor:</p>
+<table>
+<tr><th>kind</th><th>imperial</th><th>metric</th><th>factor</th></tr>
+<tr><td>length</td><td>in</td><td>mm</td><td>&times;25.4</td></tr>
+<tr><td>weight</td><td>oz</td><td>g</td><td>&times;28.349523125</td></tr>
+<tr><td>speed</td><td>mph</td><td>kph</td><td>&times;1.609344</td></tr>
+<tr><td>area</td><td>in&sup2;</td><td>dm&sup2;</td><td>&times;0.064516</td></tr>
+</table>
+<p>Wing loading gets its own pair of helpers (<code>wing_loading_to_display</code>,
+<code>wing_loading_unit_label</code>) since it's a compound unit (oz/ft&sup2; imperial vs.
+gr/dm&sup2; metric) that doesn't reduce to a single length/weight/area conversion.</p>
+
+<h2 id="config-io">config_io.py <span class="file-badge">ui/config_io.py</span></h2>
+<p>Save/load the entire <code>AppState</code> to/from a JSON file, standing in for Excel's
+implicit cross-sheet cell references. <code>_SCALAR_FIELDS</code> is an explicit allow-list of
+every plain-attribute input (adding a new input, like the Wing tab's twist fields, means adding
+its name to this list); <code>_PANEL_FIELDS</code> lists the small dataclass-valued attributes
+(<code>stab_panel</code>, <code>fin_lower</code>, <code>fin_upper</code>,
+<code>vtail_panel</code>), serialized via <code>dataclasses.asdict</code>.
+<code>apply_dict_to_state</code> is deliberately tolerant of missing keys, so a config file
+saved by an older version of the app (before a new field existed) still loads cleanly &mdash;
+only the fields actually present in the file are applied.</p>
+
+<h2 id="widgets">widgets.py <span class="file-badge">ui/widgets.py</span></h2>
+<p>Small shared helpers that keep every tab's construction code declarative:</p>
+<ul>
+  <li><code>make_spin(value, on_change, ...)</code> &mdash; a plain <code>QDoubleSpinBox</code>
+  for unit-agnostic fields (angles, ratios, efficiencies, Cl values) that never go through the
+  imperial/metric conversion.</li>
+  <li><code>UnitSpinBox</code> &mdash; a <code>QDoubleSpinBox</code> subclass that stores/emits
+  a canonical engine-unit value but <em>displays</em> it converted to the app's current unit
+  system, with the matching suffix. Its <code>sync()</code> method is called from every tab's
+  <code>refresh()</code> (itself triggered by <code>state.changed</code>, including a unit
+  toggle) to re-pull the canonical value and re-render it in whichever unit system is now
+  active.</li>
+  <li><code>add_result_row(layout, caption)</code> &mdash; a bold, non-editable
+  <code>QLabel</code> for a computed (read-only) result, added as a <code>QFormLayout</code>
+  row.</li>
+</ul>
+<p>Every spin box in the app &mdash; both helpers here, and the two places that still construct
+a raw <code>QDoubleSpinBox</code> directly (the Wing tab's stall-speed/Cl value spinner, and
+<code>BalancePointBox</code>'s value spinner) &mdash; is capped at
+<code>SPIN_BOX_MAX_WIDTH</code> pixels. Left uncapped, Qt's default <code>QFormLayout</code>
+field-growth behavior stretches every input box to fill its whole column, pushing the
+increment/decrement arrows far to the right of the actual value; a fixed max width keeps the
+arrows snug against the value across every tab in the app.</p>
+
+<h2 id="tabs">Tabs <span class="toc-badge">ui/*_tab.py</span></h2>
+<p>One file per tab, each following the same shape: a <code>QWidget</code> subclass whose
+constructor builds <code>QGroupBox</code>/<code>QFormLayout</code> sections of input widgets
+(via <a href="#widgets"><code>widgets.py</code></a> helpers) and result labels, connects
+<code>state.changed</code> to <code>self.refresh</code>, then calls <code>self.refresh()</code>
+once immediately. <code>refresh()</code> re-syncs every spin box, pulls a fresh result from the
+matching <code>AppState</code> accessor, and re-renders every label/chart from it.</p>
+<table>
+<tr><th>Tab</th><th>File</th><th>Engine module(s)</th></tr>
+<tr><td>Setup</td><td><code>setup_tab.py</code></td>
+    <td>units toggle, tail-type toggle, save/load, static instructions/glossary/credits</td></tr>
+<tr><td>Wing</td><td><code>wing_tab.py</code></td>
+    <td><a href="#wing">wing.py</a>, <a href="#flight-performance">flight_performance.py</a></td></tr>
+<tr><td>Cl Calcs</td><td><code>cl_calcs_tab.py</code></td>
+    <td><a href="#cl-distribution">cl_distribution.py</a></td></tr>
+<tr><td>Cruciform Tail</td><td><code>cruciform_tail_tab.py</code></td>
+    <td><a href="#tail-cruciform">tail_cruciform.py</a></td></tr>
+<tr><td>Cruciform Tail CG</td><td><code>cruciform_cg_tab.py</code></td>
+    <td><a href="#neutral-point">neutral_point.py</a></td></tr>
+<tr><td>V-Tail</td><td><code>vtail_tab.py</code></td>
+    <td><a href="#tail-vtail">tail_vtail.py</a></td></tr>
+<tr><td>V-Tail CG</td><td><code>vtail_cg_tab.py</code></td>
+    <td><a href="#neutral-point">neutral_point.py</a>, <a href="#vtail-convert">vtail_convert.py</a></td></tr>
+<tr><td>Quick V-Tail Sizing</td><td><code>quick_vtail_tab.py</code></td>
+    <td><a href="#vtail-convert">vtail_convert.py</a></td></tr>
+<tr><td>Tail Sizing Checks</td><td><code>tail_checks_tab.py</code></td>
+    <td><a href="#tail-checks">tail_checks.py</a></td></tr>
+</table>
+<p>A few tabs share a reusable sub-component rather than duplicating layout code:
+<code>BalancePointBox</code> (the static-margin/%MAC/distance radio selector plus its result
+labels, used identically by both CG tabs) and <code>BalanceDiagramWidget</code> (see below).</p>
+
+<h2 id="painted-widgets">Custom-Painted Widgets <span class="toc-badge">ui/*_widget.py</span></h2>
+<p>The app has no charting or diagramming library dependency &mdash; every diagram is drawn
+directly with <code>QPainter</code> in a small <code>QWidget</code> subclass. All three follow
+the same shape: a <code>set_data(...)</code> method stores plain model-space data (inches,
+degrees &mdash; never display units) and calls <code>self.update()</code> to schedule a
+repaint; <code>paintEvent()</code> computes a <code>plot_rect</code> inset from the widget's own
+bounds, builds a small <code>to_widget(x, y) -&gt; QPointF</code> closure mapping model-space
+coordinates into that rect, and draws with it &mdash; only the corner/axis text labels ever
+call into <a href="#units"><code>units.py</code></a> for display-unit conversion.</p>
+<ul>
+  <li><strong><code>PlanformWidget</code></strong> &mdash; a wing/tail/fin outline: filled,
+  one color per panel (from <a href="#planform"><code>planform.compute_planform_panels</code></a>),
+  with a dashed MAC line and a triangle marking the 25%-MAC aerodynamic-center point. Uses a
+  single <em>uniform</em> scale for both axes (<code>_make_transform</code> picks
+  <code>min(width/span_range, height/chord_range)</code>) so the drawn shape is true to the
+  real planform's proportions, not stretched to fill the widget.</li>
+  <li><strong><code>BalanceDiagramWidget</code></strong> &mdash; a single reference bar
+  spanning the root chord, with the MAC segment highlighted, the Neutral Point marked with a
+  dashed line + triangle, and the CG marked with a diamond; tints the whole background red as a
+  visible warning whenever the NP is forward of the CG (a statically unstable balance point).</li>
+  <li><strong><code>XYChartWidget</code></strong> (<a href="#cl-distribution">Cl Calcs</a>
+  tab only) &mdash; a generic line chart taking a list of <code>ChartSeries</code> (label,
+  color, points, optional dashed style). Unlike <code>PlanformWidget</code>, its x and y axes
+  scale <em>independently</em>, since a span-in-inches axis and a dimensionless-Cl axis have
+  unrelated magnitudes; draws light gridlines with numeric labels, an explicit zero-line when
+  the data straddles zero, and a small legend when more than one series is plotted.</li>
+</ul>
+
+<h2 id="main-window">main_window.py <span class="file-badge">ui/main_window.py</span></h2>
+<p>Builds the single <code>QTabWidget</code> and registers every tab, each wrapped in a
+scrollable container (<code>_scrollable()</code>) so a narrow window never clips content.
+Cruciform-tail and V-tail tabs are registered like any other, but their <code>addTab()</code>
+return value (the tab's index) is captured, so <code>_update_tab_visibility()</code> &mdash;
+connected to <code>state.changed</code> &mdash; can show only the matching set based on
+<code>state.tail_type</code>. Tabs with no such dependency (Setup, Wing, Cl Calcs, Quick V-Tail
+Sizing, Tail Sizing Checks) are always visible and need no index bookkeeping at all.</p>
+
+<h2 id="testing">Testing</h2>
+<p><code>tests/</code> mirrors <code>engine/</code> file-for-file
+(<code>tests/test_&lt;module&gt;.py</code>); there are no UI tests, matching the codebase's
+strict computation/presentation split &mdash; every formula worth testing lives in a pure
+function the test suite can call directly. Two distinct testing styles show up, depending on
+whether a spreadsheet-derived ground truth exists:</p>
+<ul>
+  <li><strong>Regression against a worked example</strong> (most modules, e.g.
+  <code>test_wing.py</code>, <code>test_metric_reference.py</code>) &mdash; the same input
+  geometry as <code>SailplaneCalc.xls</code>'s own documented worked example, asserting the
+  computed results match its published numbers to a tight tolerance. This is what "port,
+  don't reinvent" verification looks like: if a formula changes and these tests still pass, the
+  port is still faithful to the reference tool.</li>
+  <li><strong>Structural/invariant tests</strong> (<a href="#cl-distribution"><code>test_cl_distribution.py</code></a>,
+  <code>test_linalg.py</code>) &mdash; for the VLM, which is a fresh implementation of a
+  standard method rather than a transcription of any spreadsheet's cells, there's no
+  golden-value ground truth to regress against. Instead these tests check the invariants the
+  method <em>must</em> satisfy regardless of the exact numbers: left/right symmetry for an
+  untwisted wing, total-lift conservation (the integrated CL matches the requested target),
+  exact linearity when scaling the target CL, and an isolated closed-form check of the
+  Biot-Savart segment helper against the textbook infinite-straight-vortex result.</li>
+</ul>
+<p><code>tests/test_config_io.py</code>'s round-trip test is fully generic &mdash; it iterates
+<code>_SCALAR_FIELDS</code>/<code>_PANEL_FIELDS</code> directly, so a newly added input field
+(like the Wing tab's twist fields) is automatically covered the moment it's added to
+<a href="#config-io"><code>config_io.py</code></a>'s field list, with no test file changes
+needed.</p>
+<pre><code>py -m pytest -q</code></pre>
+
+<h2 id="credits">Credits &amp; Sources</h2>
+<p>Formulas in this app are extracted from two workbooks by <strong>Curtis Suter</strong>:
+<code>SailplaneCalc.xls</code> (April 2005, imperial units) and
+<code>SailplaneCalcMetric.xlsx</code> (July 2009, metric units and several additional
+formulas &mdash; the 4th wing panel, true MAC length, effective/dihedral-projected wing
+geometry, taper ratio, sweep angle, and the Speed/Cl/G-load calculator, all adopted here
+regardless of which unit system is selected). Both credit:</p>
+<ul>
+  <li><strong>Herk Stokely</strong> &mdash; for explaining Mean Aerodynamic Chord, Static
+  Margin, etc.</li>
+  <li><strong>Martin Simons</strong> &mdash; <em>Model Aircraft Aerodynamics</em>, source of
+  the wing/tail geometry and neutral-point formulas (<a href="#neutral-point">neutral_point.py</a>).</li>
+  <li><strong>Mark Drela</strong> &mdash; source of the Tail Sizing Checks formulas (Radio
+  Controlled Soaring Digest, Aug 2004; <a href="#tail-checks">tail_checks.py</a>).</li>
+  <li><strong>Joe Hahn and Don Stackhouse</strong> &mdash; aerodynamic explanations at
+  djaerotech.com.</li>
+</ul>
+<p>Both original spreadsheets are free to use and redistribute with credit to the author.</p>
+<p>The Cl Calcs tab's local Cl / lift-distribution method
+(<a href="#cl-distribution">cl_distribution.py</a>) is ported from <code>LIFTROLL.xlsx</code>,
+<strong>John Hazel's</strong> Lift and Cl calculator for wings (thanks to
+<strong>Bas Breijer</strong> for color formatting and adding individual sweep on 4 panels with
+40 vortexes). The underlying Vortex Lattice Method itself is standard aerodynamic theory,
+covered in any aerodynamics textbook that treats finite-wing lifting-line/panel methods, e.g.
+Katz &amp; Plotkin's <em>Low-Speed Aerodynamics</em> or Bertin &amp; Cummings'
+<em>Aerodynamics for Engineers</em>.</p>
+
+</main>
+</div>
+</body>
+</html>

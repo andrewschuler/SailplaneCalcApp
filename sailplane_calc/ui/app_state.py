@@ -11,6 +11,7 @@ from dataclasses import replace as dataclass_replace
 from PySide6.QtCore import QObject, Signal
 
 from ..engine import flight_performance
+from ..engine.cl_distribution import ClDistributionInput, compute_cl_distribution
 from ..engine.models import PanelInput, TailMount, WingInput, WingPanelInput
 from ..engine.neutral_point import (
     compute_balance_point,
@@ -49,6 +50,7 @@ class AppState(QObject):
         self.span1, self.span2, self.span3, self.span4 = 18.0, 24.0, 18.0, 0.0
         self.sweep1, self.sweep2, self.sweep3, self.sweep4 = 0.0, 0.8, 1.0, 0.0
         self.rise1, self.rise2, self.rise3, self.rise4 = 0.0, 4.25, 10.4, 0.0
+        self.twist1_deg, self.twist2_deg, self.twist3_deg, self.twist4_deg = 0.0, 0.0, 0.0, 0.0
 
         # Speed / Cl / G-load calculator: mode picks whether "speed_calc_value" holds a stall
         # speed (mph) or a Cl, mirroring the balance-point selector pattern below.
@@ -88,10 +90,22 @@ class AppState(QObject):
 
     def wing_panels(self) -> list[WingPanelInput]:
         return [
-            WingPanelInput(self.span1, self.chord_root, self.chord1_tip, self.sweep1, self.rise1),
-            WingPanelInput(self.span2, self.chord1_tip, self.chord2_tip, self.sweep2, self.rise2),
-            WingPanelInput(self.span3, self.chord2_tip, self.chord3_tip, self.sweep3, self.rise3),
-            WingPanelInput(self.span4, self.chord3_tip, self.chord4_tip, self.sweep4, self.rise4),
+            WingPanelInput(
+                span=self.span1, chord_root=self.chord_root, chord_tip=self.chord1_tip,
+                sweep_offset=self.sweep1, dihedral_rise=self.rise1, twist_tip_deg=self.twist1_deg,
+            ),
+            WingPanelInput(
+                span=self.span2, chord_root=self.chord1_tip, chord_tip=self.chord2_tip,
+                sweep_offset=self.sweep2, dihedral_rise=self.rise2, twist_tip_deg=self.twist2_deg,
+            ),
+            WingPanelInput(
+                span=self.span3, chord_root=self.chord2_tip, chord_tip=self.chord3_tip,
+                sweep_offset=self.sweep3, dihedral_rise=self.rise3, twist_tip_deg=self.twist3_deg,
+            ),
+            WingPanelInput(
+                span=self.span4, chord_root=self.chord3_tip, chord_tip=self.chord4_tip,
+                sweep_offset=self.sweep4, dihedral_rise=self.rise4, twist_tip_deg=self.twist4_deg,
+            ),
         ]
 
     def wing_input(self) -> WingInput:
@@ -103,6 +117,10 @@ class AppState(QObject):
 
     def wing_result(self):
         return compute_wing(self.wing_input())
+
+    def cl_distribution_result(self):
+        cl, *_ = self.speed_performance()
+        return compute_cl_distribution(ClDistributionInput(panels=self.wing_panels(), target_cl=cl))
 
     def horizontal_stab_surface(self):
         return compute_horizontal_stab(self.stab_panel)

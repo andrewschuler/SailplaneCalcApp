@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QButtonGroup, QDoubleSpinBox, QFormLayout, QGroupB
 
 from . import units as units_module
 from .units import Units
-from .widgets import add_result_row
+from .widgets import SPIN_BOX_MAX_WIDTH, add_result_row
 
 
 class BalancePointBox(QGroupBox):
@@ -53,6 +53,7 @@ class BalancePointBox(QGroupBox):
         self.spin = QDoubleSpinBox()
         self.spin.setDecimals(2)
         self.spin.setRange(-9999, 9999)
+        self.spin.setMaximumWidth(SPIN_BOX_MAX_WIDTH)
         self.spin.valueChanged.connect(self._on_value_changed)
         form.addRow("Value", self.spin)
         layout.addLayout(form)

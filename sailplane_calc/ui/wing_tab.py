@@ -15,9 +15,8 @@ from ..engine.flight_performance import MAX_SPEED_MULTIPLIER
 from ..engine.planform import compute_planform_panels
 from . import units as units_module
 from .app_state import AppState
-from .collapsible_box import CollapsibleBox
 from .planform_widget import PlanformWidget
-from .widgets import UnitSpinBox, add_result_row, make_spin
+from .widgets import SPIN_BOX_MAX_WIDTH, UnitSpinBox, add_result_row, make_spin
 
 
 class WingTab(QWidget):
@@ -25,6 +24,7 @@ class WingTab(QWidget):
         super().__init__()
         self.state = state
         self._unit_spins: list[UnitSpinBox] = []
+        self._angle_spins: list[tuple[str, QDoubleSpinBox]] = []
 
         root = QVBoxLayout(self)
 
@@ -44,10 +44,16 @@ class WingTab(QWidget):
         root.addWidget(chords)
 
         panels_row = QHBoxLayout()
-        panels_row.addWidget(self._panel_box("1st Panel", "span1", "sweep1", "rise1"))
-        panels_row.addWidget(self._panel_box("2nd Panel (0 span = unused)", "span2", "sweep2", "rise2"))
-        panels_row.addWidget(self._panel_box("3rd Panel (0 span = unused)", "span3", "sweep3", "rise3"))
-        panels_row.addWidget(self._panel_box("4th Panel (0 span = unused)", "span4", "sweep4", "rise4"))
+        panels_row.addWidget(self._panel_box("1st Panel", "span1", "sweep1", "rise1", "twist1_deg"))
+        panels_row.addWidget(
+            self._panel_box("2nd Panel (0 span = unused)", "span2", "sweep2", "rise2", "twist2_deg")
+        )
+        panels_row.addWidget(
+            self._panel_box("3rd Panel (0 span = unused)", "span3", "sweep3", "rise3", "twist3_deg")
+        )
+        panels_row.addWidget(
+            self._panel_box("4th Panel (0 span = unused)", "span4", "sweep4", "rise4", "twist4_deg")
+        )
         root.addLayout(panels_row)
 
         results_row = QHBoxLayout()
@@ -83,13 +89,32 @@ class WingTab(QWidget):
         self._unit_spins.append(spin)
         return spin
 
-    def _panel_box(self, title: str, span_attr: str, sweep_attr: str, rise_attr: str) -> QGroupBox:
+    def _panel_box(
+        self, title: str, span_attr: str, sweep_attr: str, rise_attr: str, twist_attr: str
+    ) -> QGroupBox:
         box = QGroupBox(title)
         form = QFormLayout(box)
         form.addRow("Span", self._unit_row(span_attr, "length"))
         form.addRow("Sweep Offset (from this panel's root)", self._unit_row(sweep_attr, "length"))
         form.addRow("Dihedral Rise (cumulative from wing root)", self._unit_row(rise_attr, "length"))
+        form.addRow("Twist at Tip (deg, + = wash-in)", self._angle_row(twist_attr))
         return box
+
+    def _angle_row(self, attr: str) -> QDoubleSpinBox:
+        spin = make_spin(
+            getattr(self.state, attr),
+            lambda v, attr=attr: self._on_angle_change(attr, v),
+            decimals=2,
+            step=0.1,
+            minimum=-45.0,
+            maximum=45.0,
+        )
+        self._angle_spins.append((attr, spin))
+        return spin
+
+    def _on_angle_change(self, attr: str, value: float) -> None:
+        setattr(self.state, attr, value)
+        self.state.notify()
 
     def _total_results_box(self) -> QGroupBox:
         box = QGroupBox("Total Wing Results")
@@ -116,9 +141,9 @@ class WingTab(QWidget):
         self.lbl_eff_ar = add_result_row(eform, "Effective Aspect Ratio")
         return box
 
-    def _dihedral_helper_box(self) -> CollapsibleBox:
-        box = CollapsibleBox("Dihedral Helper (angle → rise)", collapsed=True)
-        form = QFormLayout()
+    def _dihedral_helper_box(self) -> QGroupBox:
+        box = QGroupBox("Dihedral Helper (angle → rise)")
+        form = QFormLayout(box)
         self._converter_angle_spins = [
             make_spin(0.0, lambda _v: self._refresh_converter(), decimals=1, step=0.5, minimum=-90, maximum=90)
             for _ in range(4)
@@ -127,7 +152,6 @@ class WingTab(QWidget):
         for i, spin in enumerate(self._converter_angle_spins, start=1):
             form.addRow(f"Panel {i} Dihedral Angle (deg)", spin)
             self._converter_rise_labels.append(add_result_row(form, f"Panel {i} Cumulative Rise"))
-        box.set_content_layout(form)
         return box
 
     def _speed_cl_gload_box(self) -> QGroupBox:
@@ -148,6 +172,7 @@ class WingTab(QWidget):
         self.speed_value_spin = QDoubleSpinBox()
         self.speed_value_spin.setDecimals(3)
         self.speed_value_spin.setRange(0.01, 9999)
+        self.speed_value_spin.setMaximumWidth(SPIN_BOX_MAX_WIDTH)
         self.speed_value_spin.valueChanged.connect(self._on_speed_value_changed)
         form.addRow("Value", self.speed_value_spin)
         layout.addLayout(form)
@@ -186,6 +211,11 @@ class WingTab(QWidget):
     def refresh(self) -> None:
         for spin in self._unit_spins:
             spin.sync()
+
+        for attr, spin in self._angle_spins:
+            spin.blockSignals(True)
+            spin.setValue(getattr(self.state, attr))
+            spin.blockSignals(False)
 
         u = self.state.units
         length = units_module.unit_label(u, "length")

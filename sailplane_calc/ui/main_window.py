@@ -3,6 +3,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import QMainWindow, QScrollArea, QTabWidget, QWidget
 
 from .app_state import AppState
+from .cl_calcs_tab import ClCalcsTab
 from .cruciform_cg_tab import CruciformCGTab
 from .cruciform_tail_tab import CruciformTailTab
 from .quick_vtail_tab import QuickVTailTab
@@ -31,6 +32,7 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.tabs.addTab(_scrollable(SetupTab(self.state)), "Setup")
         self.tabs.addTab(_scrollable(WingTab(self.state)), "Wing")
+        self.tabs.addTab(_scrollable(ClCalcsTab(self.state)), "Cl Calcs")
         self._cruciform_tail_index = self.tabs.addTab(
             _scrollable(CruciformTailTab(self.state)), "Cruciform Tail"
         )

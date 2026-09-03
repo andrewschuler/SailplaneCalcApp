@@ -7,7 +7,7 @@ from .geometry import compute_surface
 from .models import EffectiveWingResult, WingInput, WingPanelInput, WingResult
 
 
-def _incremental_rise(panels: list[WingPanelInput]) -> list[float]:
+def incremental_rise(panels: list[WingPanelInput]) -> list[float]:
     """Each panel's own rise, relative to the previous panel's cumulative rise -- the
     `dihedral_rise` field stores a cumulative measurement (see WingPanelInput's docstring)."""
     diffs: list[float] = []
@@ -28,7 +28,7 @@ def compute_panel_dihedral_deg(panels: list[WingPanelInput]) -> list[float]:
     domain error here would abort every tab's refresh() (they all call compute_wing).
     """
     angles: list[float] = []
-    for p, rise_diff in zip(panels, _incremental_rise(panels)):
+    for p, rise_diff in zip(panels, incremental_rise(panels)):
         if p.span > 0:
             ratio = max(-1.0, min(1.0, rise_diff / p.span))
             angles.append(math.degrees(math.asin(ratio)))
@@ -42,7 +42,7 @@ def compute_effective_wing(panels: list[WingPanelInput]) -> EffectiveWingResult:
     length once it has dihedral, so its aerodynamically-relevant (projected) span is shorter."""
     effective_spans: list[float] = []
     panel_areas: list[float] = []
-    for p, rise_diff in zip(panels, _incremental_rise(panels)):
+    for p, rise_diff in zip(panels, incremental_rise(panels)):
         if p.span <= 0:
             continue
         inside = p.span**2 - rise_diff**2

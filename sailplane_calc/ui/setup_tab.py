@@ -116,6 +116,10 @@ Digest, Aug 2004).</li>
 <li><b>Joe Hahn and Don Stackhouse</b> -- aerodynamic explanations at djaerotech.com.</li>
 </ul>
 <p>Both original spreadsheets are free to use and redistribute with credit to the author.</p>
+
+<p>The Cl Calcs tab's local Cl / lift-distribution method is ported from <b>LIFTROLL.xlsx</b>,
+<b>John Hazel's</b> Lift and Cl calculator for wings (thanks to <b>Bas Breijer</b> for color
+formatting and adding individual sweep on 4 panels with 40 vortexes).</p>
 """
 
 
@@ -124,6 +128,8 @@ class SetupTab(QWidget):
         super().__init__()
         self.state = state
         layout = QVBoxLayout(self)
+
+        top_row = QHBoxLayout()
 
         units_box = QGroupBox("Units")
         units_layout = QVBoxLayout(units_box)
@@ -136,7 +142,7 @@ class SetupTab(QWidget):
         (self.radio_imperial if state.units is Units.IMPERIAL else self.radio_metric).setChecked(True)
         self.radio_imperial.toggled.connect(lambda on: on and self._select_units(Units.IMPERIAL))
         self.radio_metric.toggled.connect(lambda on: on and self._select_units(Units.METRIC))
-        layout.addWidget(units_box)
+        top_row.addWidget(units_box)
 
         tail_type_box = QGroupBox("Tail Type")
         tail_type_layout = QVBoxLayout(tail_type_box)
@@ -149,7 +155,9 @@ class SetupTab(QWidget):
         (self.radio_cruciform if state.tail_type == "cruciform" else self.radio_vtail).setChecked(True)
         self.radio_cruciform.toggled.connect(lambda on: on and self._select_tail_type("cruciform"))
         self.radio_vtail.toggled.connect(lambda on: on and self._select_tail_type("vtail"))
-        layout.addWidget(tail_type_box)
+        top_row.addWidget(tail_type_box)
+
+        layout.addLayout(top_row)
 
         config_box = QGroupBox("Configuration")
         config_layout = QHBoxLayout(config_box)

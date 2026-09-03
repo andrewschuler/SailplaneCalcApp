@@ -10,6 +10,11 @@ from . import units as units_module
 if TYPE_CHECKING:
     from .app_state import AppState
 
+# A narrow, fixed max width keeps the increment/decrement arrows snug against the value
+# instead of stretched across a QFormLayout's full field column (the default field-growth
+# behavior) -- applied here so every spin box in the app gets it for free.
+SPIN_BOX_MAX_WIDTH = 135
+
 
 def make_spin(
     value: float,
@@ -28,6 +33,7 @@ def make_spin(
     spin.setSingleStep(step)
     spin.setRange(minimum, maximum)
     spin.setValue(value)
+    spin.setMaximumWidth(SPIN_BOX_MAX_WIDTH)
     spin.valueChanged.connect(on_change)
     return spin
 
@@ -61,6 +67,7 @@ class UnitSpinBox(QDoubleSpinBox):
         self.setDecimals(decimals)
         self.setSingleStep(step)
         self.setRange(minimum, maximum)
+        self.setMaximumWidth(SPIN_BOX_MAX_WIDTH)
         self.valueChanged.connect(self._on_change)
         self.sync()
 

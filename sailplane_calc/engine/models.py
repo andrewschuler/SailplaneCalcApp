@@ -32,6 +32,9 @@ class WingPanelInput(PanelInput):
     # (i.e. what you'd read off a ruler held to the root, not the incremental rise of
     # just this panel -- the incremental angle is derived from consecutive panels' values).
     dihedral_rise: float = 0.0
+    # Angle of attack at this panel's tip relative to the wing root (deg), + = wash-in.
+    # Chains like chord/sweep/rise: panel 1's root twist is 0 by definition.
+    twist_tip_deg: float = 0.0
 
 
 @dataclass
