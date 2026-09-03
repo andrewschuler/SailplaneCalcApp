@@ -1,0 +1,17 @@
+[project]
+name = "sailplane-calc"
+version = "0.1.0"
+description = "Desktop RC sailplane wing/tail sizing and CG calculator (extracted from SailplaneCalc.xls)"
+requires-python = ">=3.10"
+dependencies = [
+    "PySide6>=6.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
