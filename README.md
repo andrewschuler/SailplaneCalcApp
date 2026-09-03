@@ -52,6 +52,29 @@ metric/imperial toggle that applies everywhere at once.
 Setup tab → **Save Configuration** writes every input across every tab to a single `.json`
 file; **Load Configuration** reads one back in.
 
+## Credits & Attribution
+
+Formulas in this app are extracted from two workbooks by **Curtis Suter**: `SailplaneCalc.xls`
+(April 2005, imperial units) and `SailplaneCalcMetric.xlsx` (July 2009, metric units and
+several additional formulas — the 4th wing panel, Mean Aerodynamic Chord length,
+effective/dihedral-projected wing geometry, taper ratio, sweep angle, and the Speed/Cl/G-load
+calculator, all adopted here regardless of which unit system is selected). Both credit:
+
+- **Herk Stokely** — for explaining Mean Aerodynamic Chord, Static Margin, etc.
+- **Martin Simons** — *Model Aircraft Aerodynamics*, source of the wing/tail geometry and
+  neutral-point formulas.
+- **Mark Drela** — source of the Tail Sizing Checks formulas (Radio Controlled Soaring Digest,
+  Aug 2004).
+- **Joe Hahn and Don Stackhouse** — aerodynamic explanations at djaerotech.com.
+
+Both original spreadsheets are free to use and redistribute with credit to the author.
+
+The Cl Calcs tab's local Cl / lift-distribution method is ported from `LIFTROLL.xlsx`,
+**John Hazel's** Lift and Cl calculator for wings (thanks to **Bas Breijer** for color
+formatting and adding individual sweep on 4 panels with 40 vortexes).
+
+This same attribution is reproduced in the app itself, on the Setup tab's Credits panel.
+
 ## License
 
 [MIT](LICENSE) — free to use, modify, and redistribute.
