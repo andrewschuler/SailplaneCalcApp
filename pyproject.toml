@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Desktop RC sailplane wing/tail sizing and CG calculator (extracted from SailplaneCalc.xls)"
 requires-python = ">=3.10"
 dependencies = [
-    "PySide6>=6.6",
+    "PySide6==6.11.2",
 ]
 
 [project.optional-dependencies]
