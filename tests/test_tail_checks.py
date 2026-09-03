@@ -44,9 +44,12 @@ def test_tail_checks_cruciform(wing_input):
     result = compute_tail_checks(wing_input, wing_result, horizontal, vertical, cl_therm=0.6)
 
     assert result.eda_deg == pytest.approx(12.42, abs=0.02)
-    assert result.tail_volume_h == pytest.approx(0.41, abs=0.01)
-    assert result.tail_volume_v == pytest.approx(0.025, abs=0.001)
-    assert result.spiral_stability_b == pytest.approx(7.17, abs=0.02)
+    # Vh/Vv scale against the dihedral-projected "effective" wing (not the raw one), and
+    # spiral stability b uses its own arm term distinct from Vv's -- see tail_checks.py.
+    assert result.tail_volume_h == pytest.approx(0.415, abs=0.005)
+    assert result.tail_volume_v == pytest.approx(0.0257, abs=0.0005)
+    assert result.spiral_stability_b == pytest.approx(7.34, abs=0.02)
+    assert result.roll_control_vvb == pytest.approx(0.189, abs=0.001)
 
 
 def test_tail_checks_does_not_crash_on_empty_wing():
@@ -68,3 +71,4 @@ def test_tail_checks_does_not_crash_on_empty_wing():
     result = compute_tail_checks(empty_wing_input, empty_wing_result, horizontal, vertical, cl_therm=0.6)
     assert result.tail_volume_h == 0.0
     assert result.tail_volume_v == 0.0
+    assert result.roll_control_vvb == 0.0

@@ -2,37 +2,46 @@
 from __future__ import annotations
 
 import math
-from dataclasses import replace
 
-from .geometry import compute_surface, panel_25pct_from_own_root
-from .models import PanelInput, VTailGeometryResult
+from .geometry import compute_surface
+from .models import PanelInput, VTailConvertResult, VTailGeometryResult
 
 
 def compute_vtail(panel: PanelInput, dihedral_rise: float) -> VTailGeometryResult:
     surface = compute_surface([panel], mirrored=True)
 
-    half_dihedral_deg = (
-        math.degrees(math.atan(dihedral_rise / panel.span)) if panel.span > 0 else 0.0
-    )
+    # The panel's own span is its physical/slant length (a ruler measurement along the
+    # panel, like the Wing tab's own panel spans), with dihedral_rise the vertical rise over
+    # that length -- so half_dihedral = asin(rise/span), the same relationship
+    # wing.compute_panel_dihedral_deg uses for the main wing's dihedral, not atan (confirmed
+    # against the reference workbook's V-Tail sheet, which computes this via ASIN). The ratio
+    # is clamped to [-1, 1] before asin for the same reason wing.py clamps it: a rise larger
+    # in magnitude than the span is physically extreme but reachable mid-edit.
+    if panel.span > 0:
+        ratio = max(-1.0, min(1.0, dihedral_rise / panel.span))
+        half_dihedral_deg = math.degrees(math.asin(ratio))
+    else:
+        half_dihedral_deg = 0.0
     total_angle_deg = 180.0 - 2 * half_dihedral_deg
-
-    # NOTE: the original workbook's V-Tail!D31 ("Location of 25% point") divides by the
-    # panel's own area (D29) instead of the surface's total area (D24), e.g.
-    # `=D29*D30/D29*2-D25*0.25`. That self-cancels to `2*x1 - 0.25*mean_chord`, which is NOT
-    # the same value the general aggregation formula (used by Wing and the horizontal
-    # stabilizer) would produce. Reproduced deliberately -- it's what the original tool's
-    # downstream V-Tail neutral-point and tail-check calculations actually consumed. The
-    # `mean_chord*0.25` term is upgraded to `mac_length*0.25` for consistency with the MAC
-    # refinement adopted everywhere else (see geometry.compute_surface) -- there's no V-Tail
-    # sheet in the newer reference workbook to confirm this against, but using the true MAC
-    # here rather than area/span is the same improvement applied uniformly.
-    x1 = panel_25pct_from_own_root(panel.chord_root, panel.chord_tip, panel.sweep_offset)
-    point_25 = x1 * 2 - surface.mac_length * 0.25
-    point_0 = point_25 - surface.mac_length * 0.25
-    surface = replace(surface, point_0=point_0, point_25=point_25)
 
     return VTailGeometryResult(
         surface=surface,
         half_dihedral_deg=half_dihedral_deg,
         total_angle_deg=total_angle_deg,
     )
+
+
+def compute_vtail_equivalent_areas(vtail: VTailGeometryResult) -> VTailConvertResult:
+    """The horizontal/vertical stabilizer areas this V-tail panel is aerodynamically
+    equivalent to, for feeding into the same neutral-point/tail-checks formulas a cruciform
+    tail's horizontal stabilizer and vertical fin areas do: a cos^2/sin^2 split of the
+    V-tail's own total physical area by its dihedral angle (confirmed against the reference
+    workbook's Balance Point sheet). This is a different relationship from
+    `vtail_convert.vtail_to_conventional`'s tangent-based split, which is a separate, standalone
+    "what-if" conversion tool (the Quick V-Tail Sizing tab) -- not a source of these areas.
+    """
+    theta = math.radians(vtail.half_dihedral_deg)
+    total_area = vtail.surface.total_area
+    horizontal_area = total_area * math.cos(theta) ** 2
+    vertical_area = total_area * math.sin(theta) ** 2
+    return VTailConvertResult(horizontal_area=horizontal_area, vertical_area=vertical_area)

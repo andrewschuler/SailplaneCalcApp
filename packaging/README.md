@@ -25,5 +25,7 @@ Output lands in `dist/`: `dist/SailplaneCalc/` (Windows and Linux) or `dist/Sail
 - **Unsigned builds**: these builds are not code-signed. Windows SmartScreen will warn on first
   launch (click "More info" -> "Run anyway"), and macOS Gatekeeper will block the app (right-click
   the app -> "Open" to bypass once).
-- **No custom icon yet**: builds ship with each OS's default executable icon. See the commented
-  `icon=` lines in `SailplaneCalc.spec` for where to add one.
+- **Icon**: `assets/icon.ico` (Windows/Linux) and `assets/icon.icns` (macOS) are read directly by
+  `SailplaneCalc.spec` at build time -- regenerate both (plus `assets/icon.png`, used at
+  *runtime* via `sailplane_calc/ui/app_icon.py`'s base64-embedded copy) from the same source
+  artwork if the icon ever changes; there's no single-source-of-truth vector file checked in.

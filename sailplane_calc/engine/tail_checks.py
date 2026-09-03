@@ -41,23 +41,38 @@ def compute_tail_checks(
 ) -> TailChecksResult:
     eda_deg = compute_eda_deg(wing_input, wing_result)
 
-    common_term = 0.75 * (wing_result.surface.mean_chord + wing_result.surface.point_0)
+    # Vh/Vv scale against the dihedral-projected ("effective") wing, not the raw one -- the
+    # common_term bracket itself is a hybrid of the effective mean chord and the raw point_0,
+    # matching the reference workbook's own formula exactly (not a simplification).
+    effective = wing_result.effective
+    common_term = 0.75 * (effective.mean_chord + wing_result.surface.point_0)
+
     horizontal_arm_term = safe_div(
         (horizontal.gap_wing_te_to_surface_le + horizontal.surface.point_25) + common_term,
-        wing_result.surface.mean_chord,
+        effective.mean_chord,
     )
     vertical_arm_term = safe_div(
         (vertical.gap_wing_te_to_surface_le + vertical.surface.point_25) + common_term,
+        effective.total_span,
+    )
+    # Spiral stability's arm term is genuinely different from Vv's -- a plain wing root-chord-
+    # to-25%-point numerator over the *raw* (non-effective) span, not common_term/effective span.
+    spiral_arm_term = safe_div(
+        vertical.gap_wing_te_to_surface_le
+        + vertical.surface.point_25
+        + (wing_result.root_chord - wing_result.surface.point_25),
         wing_result.surface.total_span,
     )
 
-    tail_volume_h = safe_div(horizontal.surface.total_area, wing_result.surface.total_area) * horizontal_arm_term
-    tail_volume_v = safe_div(vertical.surface.total_area, wing_result.surface.total_area) * vertical_arm_term
-    spiral_stability_b = eda_deg * vertical_arm_term / cl_therm if cl_therm else 0.0
+    tail_volume_h = safe_div(horizontal.surface.total_area, effective.total_area) * horizontal_arm_term
+    tail_volume_v = safe_div(vertical.surface.total_area, effective.total_area) * vertical_arm_term
+    spiral_stability_b = eda_deg * spiral_arm_term / cl_therm if cl_therm else 0.0
+    roll_control_vvb = tail_volume_v * spiral_stability_b
 
     return TailChecksResult(
         eda_deg=eda_deg,
         spiral_stability_b=spiral_stability_b,
         tail_volume_h=tail_volume_h,
         tail_volume_v=tail_volume_v,
+        roll_control_vvb=roll_control_vvb,
     )

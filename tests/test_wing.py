@@ -55,6 +55,7 @@ def test_wing_effective_geometry(example_wing_input):
     assert effective.total_span == pytest.approx(117.075, abs=0.01)
     assert effective.total_area == pytest.approx(1014.09, abs=0.1)
     assert effective.aspect_ratio == pytest.approx(13.516, abs=0.01)
+    assert effective.wing_loading_oz_per_ft2 == pytest.approx(4.40, abs=0.01)
 
 
 def test_wing_four_panels():

@@ -448,25 +448,36 @@ sign convention rather than a placeholder.</p>
 
 <h2 id="tail-vtail">tail_vtail.py <span class="file-badge">engine/tail_vtail.py</span></h2>
 <p>A V-tail panel's own dihedral (half-angle from horizontal) and the included angle between
-the two V panels:</p>
-<div class="formula">half_dihedral = atan(dihedral_rise / span)
+the two V panels. The panel's <code>span</code> is a physical/slant length &mdash; a ruler
+measurement along the panel, the same convention the Wing tab's own panels use &mdash; with
+<code>dihedral_rise</code> the vertical rise over that length, so the half-angle is
+<code>asin(rise/span)</code>, not <code>atan</code> (confirmed against the V-Tail reference
+workbook's own formula; the two differ substantially at the larger dihedral angles typical of a
+V-tail, e.g. 46&deg; vs. 33&deg; for a 14.9"-rise/20.65"-span panel):</p>
+<div class="formula">half_dihedral = asin(dihedral_rise / span)
 total_angle = 180&deg; &minus; 2 &middot; half_dihedral</div>
-<div class="quirk">
-<strong>Deliberately preserved workbook quirk:</strong> the original workbook's "25% point"
-formula for the V-tail panel (<code>V-Tail!D31</code>) divides by the panel's own area instead
-of the surface's total area &mdash; algebraically <code>=D29*D30/D29*2-D25*0.25</code>
-self-cancels to <code>2&middot;x<sub>25,own-root</sub> &minus; 0.25&middot;mean_chord</code>,
-which is <em>not</em> the same value the general area-weighted aggregation formula (used by the
-Wing and horizontal stab) would produce. This is reproduced deliberately in
-<code>compute_vtail</code>, because it's what the original tool's downstream V-Tail
-neutral-point and tail-check calculations actually consumed &mdash; changing it would silently
-shift every V-tail CG/NP number away from the values V-tail builders following the original
-tool are used to. The one intentional refinement: the <code>mean_chord&middot;0.25</code> term
-uses the true MAC length instead, for consistency with the MAC upgrade applied everywhere else
-in this port (there's no V-Tail sheet in the newer metric reference workbook to check this
-specific formula against, but using the true MAC here is the same class of improvement applied
-uniformly elsewhere).
-</div>
+<p><code>compute_vtail</code>'s <code>point_0</code>/<code>point_25</code> are
+<code>compute_surface([panel], mirrored=True)</code>'s own general area-weighted aggregation,
+unmodified &mdash; an earlier version of this port reproduced a workbook quirk from the original
+<em>imperial</em> SailplaneCalc.xls where the "25% point" formula divided by the panel's own
+(single-side) area instead of the mirrored total, but the newer V-Tail reference workbook's own
+equivalent cells confirm that quirk does not persist there: its formula reduces algebraically to
+the same general aggregation `compute_surface` already produces, so no override is needed.</p>
+
+<h3>Equivalent horizontal/vertical stabilizer areas</h3>
+<p>The Neutral Point and Tail Sizing Checks formulas (below) are shared with the cruciform
+tail's separate horizontal stabilizer and vertical fin &mdash; for a V-tail, one physical panel
+must stand in for both. <code>compute_vtail_equivalent_areas</code> splits the V-tail's own
+total area by its dihedral angle:</p>
+<div class="formula">horizontal_equivalent_area = total_area &middot; cos&sup2;(half_dihedral)
+vertical_equivalent_area = total_area &middot; sin&sup2;(half_dihedral)</div>
+<p>confirmed against the V-Tail reference workbook's Balance Point sheet. This is a materially
+different relationship from <a href="#vtail-convert"><code>vtail_convert.vtail_to_conventional</code></a>'s
+tangent-based split (a linear <code>2&middot;v_half_area/(1+tan&theta;)</code>, vs. this
+quadratic <code>cos&sup2;/sin&sup2;</code> split of the total area) &mdash; the two functions
+serve genuinely different purposes and are not interchangeable: this one feeds the shared
+CG/tail-checks formulas from the V-tail's actual geometry, while <code>vtail_to_conventional</code>
+is a standalone "what-if" conversion tool for the Quick V-Tail Sizing tab only.</p>
 
 <h2 id="neutral-point">neutral_point.py <span class="file-badge">engine/neutral_point.py</span></h2>
 <p>Implements a tail-volume-coefficient neutral-point estimate (credited to Martin Simons,
@@ -489,9 +500,12 @@ reflecting a typically thinner/lower-camber tail section.</p>
 <p>the classic non-dimensional "how big and how far away is the tail" number, where the tail
 arm <code>l<sub>tail</sub></code> is the distance from the wing's own aerodynamic center (its
 25%-MAC point) to the tail's aerodynamic center, threading through the wing root chord and the
-wing-trailing-edge-to-tail-leading-edge gap the user enters. For a V-tail, the vertical
-component of the tail arm is folded in via <code>cos(half_dihedral)</code>, since a V-panel's
-effective horizontal-tail contribution shrinks as it's rotated up toward vertical.</p>
+wing-trailing-edge-to-tail-leading-edge gap the user enters. For a V-tail, the dihedral
+projection already lives entirely in <code>horizontal_equivalent_area</code> (see
+<a href="#tail-vtail"><code>compute_vtail_equivalent_areas</code></a>'s <code>cos&sup2;</code>
+term) &mdash; <code>compute_neutral_point_vtail</code> applies no further dihedral correction to
+either the tail volume or the stabilizer's own lift-curve slope, matching the reference
+workbook's Balance Point sheet, which has no separate cosine term in either formula.</p>
 
 <h3>Neutral point &amp; static margin</h3>
 <div class="formula">downwash_factor (d&epsilon;/d&alpha;) &asymp; 35 &middot; a<sub>wing</sub> / AR<sub>wing</sub>

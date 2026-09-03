@@ -19,8 +19,12 @@ from ..engine.neutral_point import (
     compute_neutral_point_vtail,
 )
 from ..engine.tail_checks import compute_tail_checks
-from ..engine.tail_cruciform import compute_horizontal_stab, compute_vertical_fin
-from ..engine.tail_vtail import compute_vtail
+from ..engine.tail_cruciform import (
+    compute_horizontal_stab,
+    compute_vertical_fin,
+    compute_vertical_fin_panel_taper_ratios,
+)
+from ..engine.tail_vtail import compute_vtail, compute_vtail_equivalent_areas
 from ..engine.vtail_convert import conventional_to_vtail, vtail_to_conventional
 from ..engine.wing import compute_dihedral_rise_from_angles, compute_wing
 from .units import Units
@@ -68,6 +72,9 @@ class AppState(QObject):
         self.vtail_panel = PanelInput(span=20.65, chord_root=5.5, chord_tip=3, sweep_offset=0.86)
         self.vtail_dihedral_rise = 14.9
         self.vtail_stab_efficiency = 0.60
+        # A V-tail is one physical surface, so it has one gap -- not the cruciform tab's two
+        # separate stab/fin gaps.
+        self.gap_wing_te_to_vtail_le = 32.79
 
         self.cl_therm = 0.6
 
@@ -128,15 +135,18 @@ class AppState(QObject):
     def vertical_fin_surface(self):
         return compute_vertical_fin(self.fin_lower, self.fin_upper)
 
+    def vertical_fin_panel_taper_ratios(self):
+        return compute_vertical_fin_panel_taper_ratios(self.fin_lower, self.fin_upper)
+
     def vtail_geometry(self):
         return compute_vtail(self.vtail_panel, self.vtail_dihedral_rise)
 
     def vtail_equivalent_areas(self):
-        vtail = self.vtail_geometry()
-        return vtail_to_conventional(
-            v_half_area=vtail.surface.panel_areas[0] if vtail.surface.panel_areas else 0.0,
-            half_dihedral_deg=vtail.half_dihedral_deg,
-        )
+        """The horizontal/vertical stabilizer areas this V-tail is aerodynamically equivalent
+        to, for the CG and Tail Sizing Checks calculations -- a cos^2/sin^2 split of the
+        V-tail's own total area (see tail_vtail.compute_vtail_equivalent_areas), distinct from
+        the tangent-based `vtail_to_conventional` conversion the Quick V-Tail Sizing tab uses."""
+        return compute_vtail_equivalent_areas(self.vtail_geometry())
 
     def neutral_point_cruciform(self):
         return compute_neutral_point_cruciform(
@@ -153,7 +163,7 @@ class AppState(QObject):
             self.wing_result(),
             vtail,
             horizontal_equivalent_area=equivalent.horizontal_area,
-            gap_wing_te_to_vtail_le=self.gap_wing_te_to_stab_le,
+            gap_wing_te_to_vtail_le=self.gap_wing_te_to_vtail_le,
             stab_efficiency=self.vtail_stab_efficiency,
         )
 
@@ -202,15 +212,17 @@ class AppState(QObject):
         )
 
     def tail_checks_vtail(self):
+        # A V-tail is one physical surface, so both TailMounts share the same single gap --
+        # not the cruciform tab's two separate stab/fin gaps.
         vtail = self.vtail_geometry()
         equivalent = self.vtail_equivalent_areas()
         horizontal = TailMount(
             surface=self._replace_area(vtail.surface, equivalent.horizontal_area),
-            gap_wing_te_to_surface_le=self.gap_wing_te_to_stab_le,
+            gap_wing_te_to_surface_le=self.gap_wing_te_to_vtail_le,
         )
         vertical = TailMount(
             surface=self._replace_area(vtail.surface, equivalent.vertical_area),
-            gap_wing_te_to_surface_le=self.gap_wing_te_to_fin_le,
+            gap_wing_te_to_surface_le=self.gap_wing_te_to_vtail_le,
         )
         return compute_tail_checks(
             self.wing_input(), self.wing_result(), horizontal, vertical, self.cl_therm

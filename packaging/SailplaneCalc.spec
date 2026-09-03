@@ -44,7 +44,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,  # windowed: no console window on launch
-    icon=None,  # no icon yet -- e.g. os.path.join(REPO_ROOT, "assets", "icon.ico") once one exists
+    icon=os.path.join(REPO_ROOT, "assets", "icon.ico"),  # ignored (harmlessly) on Linux
 )
 
 coll = COLLECT(
@@ -62,6 +62,6 @@ if sys.platform == "darwin":
     app = BUNDLE(
         coll,
         name="SailplaneCalc.app",
-        icon=None,  # e.g. os.path.join(REPO_ROOT, "assets", "icon.icns") once one exists
+        icon=os.path.join(REPO_ROOT, "assets", "icon.icns"),
         bundle_identifier=None,
     )

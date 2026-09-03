@@ -25,6 +25,7 @@ class VTailTab(QWidget):
         form.addRow("Span (half)", self._panel_row("span"))
         form.addRow("Sweepback", self._panel_row("sweep_offset"))
         form.addRow("Dihedral (rise)", self._plain_row("vtail_dihedral_rise"))
+        form.addRow("Wing TE to V-Tail LE Gap", self._plain_row("gap_wing_te_to_vtail_le"))
         root.addWidget(box)
 
         results = QGroupBox("Total V-Tail Results")

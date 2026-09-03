@@ -38,6 +38,7 @@ _SCALAR_FIELDS = [
     "cruciform_stab_efficiency",
     "vtail_dihedral_rise",
     "vtail_stab_efficiency",
+    "gap_wing_te_to_vtail_le",
     "cl_therm",
     "cruciform_balance_mode",
     "cruciform_balance_value",

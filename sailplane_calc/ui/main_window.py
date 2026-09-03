@@ -7,6 +7,7 @@ from .cl_calcs_tab import ClCalcsTab
 from .cruciform_cg_tab import CruciformCGTab
 from .cruciform_tail_tab import CruciformTailTab
 from .quick_vtail_tab import QuickVTailTab
+from .results_tab import ResultsTab
 from .setup_tab import SetupTab
 from .tail_checks_tab import TailChecksTab
 from .vtail_cg_tab import VTailCGTab
@@ -43,6 +44,7 @@ class MainWindow(QMainWindow):
         self._vtail_cg_index = self.tabs.addTab(_scrollable(VTailCGTab(self.state)), "V-Tail CG")
         self.tabs.addTab(_scrollable(QuickVTailTab(self.state)), "Quick V-Tail Sizing")
         self.tabs.addTab(_scrollable(TailChecksTab(self.state)), "Tail Sizing Checks")
+        self.tabs.addTab(_scrollable(ResultsTab(self.state)), "Results")
 
         self.setCentralWidget(self.tabs)
 

@@ -18,10 +18,18 @@ from PySide6.QtWidgets import (
 )
 
 from . import config_io
+from .app_icon import ICON_PNG_BASE64
 from .app_state import AppState
 from .units import Units
 
-_INSTRUCTIONS_HTML = """
+_INSTRUCTIONS_HTML = f"""
+<table cellspacing="0" cellpadding="0" align="left">
+<tr>
+<td valign="middle"><img src="data:image/png;base64,{ICON_PNG_BASE64}" width="64" height="64"></td>
+<td valign="middle" style="padding-left:12px;"><span style="font-size:24pt;font-weight:bold;">SailplaneCalc</span></td>
+</tr>
+</table>
+
 <h3>What does it do?</h3>
 <p>Calculates wing and vertical/horizontal tail areas and aspect ratios; tail length and tail
 size/span/dihedral design considerations for a polyhedral glider; percent Mean Aerodynamic

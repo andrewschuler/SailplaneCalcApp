@@ -39,6 +39,22 @@ def test_cl_distribution_result_matches_speed_performance_cl(state):
     assert result.total_cl_check == pytest.approx(target_cl, rel=1e-3)
 
 
+def test_vtail_tail_checks_use_one_consistent_gap(state):
+    """A V-tail is one physical surface, so its horizontal and vertical TailMounts must share
+    the same gap_wing_te_to_vtail_le -- not two different cruciform-tab gaps (regression guard
+    for a bug found comparing against the V-Tail reference workbook)."""
+    before = state.tail_checks_vtail()
+
+    state.gap_wing_te_to_vtail_le += 10.0
+    state.notify()
+    after = state.tail_checks_vtail()
+
+    # Both Vh and Vv depend on the shared gap and must move together; if the vertical side
+    # were still reading a different (unchanged) attribute, only one of these would shift.
+    assert after.tail_volume_h != pytest.approx(before.tail_volume_h)
+    assert after.tail_volume_v != pytest.approx(before.tail_volume_v)
+
+
 def test_dihedral_converter_matches_stored_rises(state):
     """Round-trips rise -> angle -> rise for the 3 active panels (the default 4th panel has
     span=0, so its angle is defined as 0 and the converter just carries the cumulative rise

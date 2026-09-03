@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QButtonGroup,
     QDoubleSpinBox,
@@ -17,6 +18,7 @@ from . import units as units_module
 from .app_state import AppState
 from .planform_widget import PlanformWidget
 from .widgets import SPIN_BOX_MAX_WIDTH, UnitSpinBox, add_result_row, make_spin
+from .xy_chart_widget import ChartSeries, XYChartWidget
 
 
 class WingTab(QWidget):
@@ -70,6 +72,7 @@ class WingTab(QWidget):
         bottom_row = QHBoxLayout()
         bottom_row.addWidget(self._speed_cl_gload_box())
         bottom_row.addWidget(self._dihedral_helper_box())
+        bottom_row.addWidget(self._dihedral_chart_box())
         root.addLayout(bottom_row)
         root.addStretch(1)
 
@@ -138,7 +141,15 @@ class WingTab(QWidget):
         eform = QFormLayout(box)
         self.lbl_eff_span = add_result_row(eform, "Effective Total Span")
         self.lbl_eff_area = add_result_row(eform, "Effective Total Area")
+        self.lbl_eff_loading = add_result_row(eform, "Effective Wing Loading")
         self.lbl_eff_ar = add_result_row(eform, "Effective Aspect Ratio")
+        return box
+
+    def _dihedral_chart_box(self) -> QGroupBox:
+        box = QGroupBox("Does your Dihedral Look like this?")
+        layout = QVBoxLayout(box)
+        self.dihedral_chart = XYChartWidget(x_label="span", y_label="rise")
+        layout.addWidget(self.dihedral_chart)
         return box
 
     def _dihedral_helper_box(self) -> QGroupBox:
@@ -241,10 +252,24 @@ class WingTab(QWidget):
         eff = result.effective
         self.lbl_eff_span.setText(f"{units_module.to_display(eff.total_span, u, 'length'):.2f} {length}")
         self.lbl_eff_area.setText(f"{units_module.to_display(eff.total_area, u, 'area'):.2f} {area_label}")
+        eff_loading = units_module.wing_loading_to_display(self.state.weight_oz, eff.total_area, u)
+        self.lbl_eff_loading.setText(f"{eff_loading:.2f} {units_module.wing_loading_unit_label(u)}")
         self.lbl_eff_ar.setText(f"{eff.aspect_ratio:.2f}")
 
         panels = compute_planform_panels(self.state.wing_panels(), mirror=True)
         self.planform.set_data(panels, s.point_25, s.mac_span_location)
+
+        dihedral_points = [(0.0, 0.0)]
+        cumulative_span = 0.0
+        for p in self.state.wing_panels():
+            if p.span <= 0:
+                continue
+            cumulative_span += p.span
+            dihedral_points.append((
+                units_module.to_display(cumulative_span, u, "length"),
+                units_module.to_display(p.dihedral_rise, u, "length"),
+            ))
+        self.dihedral_chart.set_series([ChartSeries("Dihedral", QColor("#5a9fd4"), dihedral_points)])
 
         self._refresh_converter()
 

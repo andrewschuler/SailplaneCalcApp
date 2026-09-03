@@ -68,6 +68,7 @@ class EffectiveWingResult:
     total_area: float
     mean_chord: float
     aspect_ratio: float
+    wing_loading_oz_per_ft2: float
 
 
 @dataclass
@@ -135,3 +136,4 @@ class TailChecksResult:
     spiral_stability_b: float
     tail_volume_h: float
     tail_volume_v: float
+    roll_control_vvb: float

@@ -2,7 +2,11 @@
 import pytest
 
 from sailplane_calc.engine.models import PanelInput
-from sailplane_calc.engine.tail_cruciform import compute_horizontal_stab, compute_vertical_fin
+from sailplane_calc.engine.tail_cruciform import (
+    compute_horizontal_stab,
+    compute_vertical_fin,
+    compute_vertical_fin_panel_taper_ratios,
+)
 
 
 def test_horizontal_stab():
@@ -35,3 +39,12 @@ def test_vertical_fin():
     assert result.mac_length == pytest.approx(5.492, abs=0.001)
     assert result.taper_ratio == pytest.approx(0.5, abs=0.001)
     assert result.panel_areas == pytest.approx([21.00, 52.50], abs=0.01)
+    assert result.aspect_ratio == pytest.approx(2.667, abs=0.001)
+
+
+def test_vertical_fin_panel_taper_ratios():
+    lower = PanelInput(span=3.5, chord_root=7, chord_tip=5, sweep_offset=1)
+    upper = PanelInput(span=10.5, chord_root=7, chord_tip=3, sweep_offset=1.5)
+    lower_taper, upper_taper = compute_vertical_fin_panel_taper_ratios(lower, upper)
+    assert lower_taper == pytest.approx(0.7143, abs=0.001)
+    assert upper_taper == pytest.approx(0.4286, abs=0.001)

@@ -70,3 +70,20 @@ def compute_vertical_fin(lower: PanelInput, upper: PanelInput) -> SurfaceResult:
         panel_areas=panel_areas,
         panel_sweep_angle_deg=sweep_angles,
     )
+
+
+def compute_vertical_fin_panel_taper_ratios(lower: PanelInput, upper: PanelInput) -> tuple[float, float]:
+    """Per-panel taper ratio for the fin's two independently-rooted panels -- distinct from
+    SurfaceResult.taper_ratio's whole-fin aggregate (which blends both panels' MAC against the
+    shared root and has no counterpart here, since a fin whose panels share a root but aren't
+    chained tip-to-tip like the wing has no single well-defined "one taper ratio" the way a
+    chained wing panel does). Returns (lower_taper_ratio, upper_taper_ratio)."""
+    center_chord = upper.chord_root or lower.chord_root  # shared root/center chord
+
+    def _taper(p: PanelInput) -> float:
+        if p.span <= 0 or center_chord == 0:
+            return 0.0
+        mean_chord = (p.chord_root + p.chord_tip) / 2
+        return 2 * mean_chord / center_chord - 1
+
+    return _taper(lower), _taper(upper)
